@@ -80,7 +80,6 @@ periksa sendiri kodenya. Kalau antivirus memblokir, tambahkan pengecualian untuk
 
 ### 1. Instal
 
-<<<<<<< HEAD
 Unduh `DuckFlash.exe` dari halaman [Releases](https://github.com/zee2434/DuckFlash/releases),
 =======
 Unduh `DuckFlash.exe` dari halaman [Releases](https://github.com/Dikdikduck/DuckFlash/releases),
@@ -186,7 +185,6 @@ bahasa Indonesia, jadi tidak perlu dekut error mentah.
 Butuh .NET 8 SDK.
 
 ```powershell
-<<<<<<< HEAD
 git clone https://github.com/zee2434/DuckFlash.git
 =======
 git clone https://github.com/Dikdikduck/DuckFlash.git
@@ -229,8 +227,6 @@ MIT. Lihat [LICENSE](LICENSE).
 
 ## Repo
 
-<<<<<<< HEAD
-<https://github.com/zee2434/DuckFlash>
 =======
-<https://github.com/Dikdikduck/DuckFlash>
+<https://github.com/zee2434/DuckFlash>
 >>>>>>> 15c381f (DuckFlash v1.0.0)
