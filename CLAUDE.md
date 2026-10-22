@@ -69,7 +69,7 @@ Fitur flashing berisiko membuat perangkat tidak bisa menyala. Aturan berikut waj
 
 ## Repo dan rilis
 
-- Repo: `github.com/Dikdikduck/DuckFlash`, nama file rilis `DuckFlash.exe`.
+- Repo: `github.com/zee2434/DuckFlash`, nama file rilis `DuckFlash.exe`.
 - Lisensi: MIT.
 - `README.md` wajib memuat: deskripsi, screenshot, cara pakai, **disclaimer risiko flashing** (risiko ditanggung pengguna), dan catatan bahwa antivirus bisa memberi peringatan palsu pada tools seperti ini.
 - Rilis lewat GitHub Releases (file `.exe` + checksum SHA256).

@@ -405,8 +405,9 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     sudah masuk `.gitignore`.
   - Publish: `artifacts/publish/DuckFlash.exe` (155,4 MB),
     SHA256 `43ff332781ffc070c426a55f9d8c8243a19ca7b6b786f2e48f986c8fa5c1513e`.
-    ⚠️ Hash ini SUDAH TIDAK LAGI BERLAKU — `.exe` dipublish ulang setelah koreksi
-    nama akun GitHub. Hash yang benar untuk diunggah: `6d56a9c11f1f1f727c669f8395ff21acb46a6e4caa8f2e2fa9d2ea4caad065fd`.
+    ⚠️ Hash ini SUDAH TIDAK LAGI BERLAKU — `.exe` dipublish ulang beberapa kali
+    setelah koreksi nama akun GitHub. Hash yang benar untuk diunggah:
+    `148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f`.
   - Verifikasi: `.exe` hasil publish dijalankan sungguhan, window terbuka, platform-tools
     terdeteksi, logo tampil, ProductVersion terbaca `1.0.0`, dan label versi
     "Application version / 1.0.0" terdeteksi lewat UI Automation.
@@ -436,18 +437,18 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
 
 
 - **Sesi persiapan rilis: koreksi nama akun GitHub + repo lokal**
-  - PENTING: nama akun GitHub yang benar adalah `Dikdikduck` (dengan dua huruf k
-    berturut-turut: `Dikdik` + `duck`). Sebelumnya semua file memakai
-    `Dikdiduck`. Itu bug nyata, bukan cuma typo di dokumen:
-    `UpdateService.cs` menembak `https://api.github.com/repos/Dikdiduck/DuckFlash/releases/latest`
-    yang tidak ada, jadi fitur "Cek Versi Terbaru" akan selalu gagal diam-diam.
+  - PENTING: pada sesi ini diasumsikan nama akun GitHub adalah `Dikdikduck`.
+    Asumsi itu SALAH - nama yang benar `zee2434` (lihat sesi berikutnya di bawah).
+    Semua perubahan `Dikdikduck` yang dilakukan sesi ini sudah ditimpa lagi
+    menjadi `zee2434`.
+  - Yang benar dari sesi ini: `UpdateService.cs` memang perlu URL repo yang
+    benar, dan itu bug nyata (bukan cuma typo di dokumen) - kalau repo tidak ada,
+    fitur "Cek Versi Terbaru" gagal diam-diam.
   - Sudah diselaraskan di: `README.md`, `LICENSE`, `CLAUDE.md` (baris "Repo dan rilis"),
     `src/DuckFlash/Services/UpdateService.cs`, `src/DuckFlash/DuckFlash.csproj`
     (`<Company>`/`<Authors>`), `docs/RELEASE_CHECKLIST.md`, dan dua file test.
   - Verifikasi setelah perubahan: `dotnet build -c Release` 0 warning / 0 error,
     274 test lulus semua.
-  - Cek URL repo via API GitHub: `Dikdikduck/DuckFlash` mengembalikan HTTP 404,
-    artinya repo-nya BELUM dibuat di GitHub. Jadi langkah "buat repo" masih wajib.
   - `git` (2.55.0) dan `gh` (2.103.0) dipasang lewat winget. Git Credential
     Manager ikut terpasang, jadi auth bisa lewat browser.
   - Repo lokal sudah di-init di branch `main`, commit pertama `15c381f`
@@ -457,7 +458,7 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     karena README dan release notes memakainya.
   - `RELEASE_NOTES.md`: gambar utama diganti dari path relatif
     (`docs/screenshot-main.png`) ke URL absolut
-    (`https://raw.githubusercontent.com/Dikdikduck/DuckFlash/main/docs/screenshot-main.png`).
+    (`https://raw.githubusercontent.com/zee2434/DuckFlash/main/docs/screenshot-main.png`).
     Path relatif berisiko tidak muncul di halaman GitHub Releases karena
     me-render relatif terhadap URL rilis, bukan branch `main`.
   - MASIH MANUAL oleh pemilik proyek (tidak dikerjakan oleh Claude):
@@ -466,3 +467,29 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     2. Uji di perangkat nyata (lihat `docs/RELEASE_CHECKLIST.md` bagian 2).
     3. Unggah `DuckFlash.exe` + `DuckFlash.exe.sha256` ke GitHub Releases dengan
        tag `v1.0.0`, deskripsi dari `docs/RELEASE_NOTES.md`.
+- **Sesi perbaikan rilis: username sebenarnya zee2434 + tag belum ter-push**
+  - KOREKSI PENTING: nama akun GitHub yang benar adalah `zee2434`, bukan
+    `Dikdikduck`. Semua jejak `Dikdikduck`/`Dikdiduck` sudah diganti ke
+    `zee2434` di README, LICENSE, CLAUDE.md, `UpdateService.cs`, csproj,
+    dan test. Verifikasi dengan menyorot string di dalam `.exe` hasil publish:
+    `api.github.com/repos/zee2434/DuckFlash/releases/latest`.
+  - PENYEBAB UTAMA "Releases kosong": tag `v1.0.0` hanya ada di repo LOKAL.
+    `git ls-remote --tags origin` mengembalikan kosong - tidak ada tag di remote.
+    GitHub hanya bisa membuat rilis dari tag yang sudah ada di remote, jadi
+    halaman Releases tetap kosong sampai tag di-push.
+  - Repo ternyata SUDAH dibuat dan `main` sudah ter-push (commit `11b7e3c`).
+    Repo private (API publik balas 404 tanpa token).
+  - File `DuckFlash-v1.0.0-win-x64.zip` sempat ter-staged di git. Sudah
+    di-unstage dan politteks `DuckFlash-v*-win-x64.zip` ditambahkan ke
+    `.gitignore` - file 63 MB ini adalah asset rilis, bukan source code.
+  - Publish ulang dilakukan karena `UpdateService.cs` berubah. SHA256 terbaru
+    `148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f`
+    (hash sebelumnya `6d56a9c1...` dan yang paling awal `43ff3327...`
+    sudah tidak berlaku - jangan dipakai).
+  - `dotnet build -c Release` 0 warning / 0 error, 274 test lulus.
+  - MASIH MANUAL oleh pemilik proyek:
+    1. `git push origin v1.0.0` - push tag (WAJIB, tanpa ini Releases kosong).
+    2. Upload `DuckFlash.exe` + `DuckFlash.exe.sha256` ke GitHub Releases
+       dengan tag `v1.0.0`, deskripsi dari `docs/RELEASE_NOTES.md`.
+    3. Ubah repo jadi public (kalau mau APK ini bisa diunduh orang lain).
+    4. Uji di perangkat nyata (lihat `docs/RELEASE_CHECKLIST.md` bagian 2).

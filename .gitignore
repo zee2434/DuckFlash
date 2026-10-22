@@ -32,3 +32,7 @@ Desktop.ini
 ## Output dari menjalankan aplikasi secara manual saat development
 app-stdout.txt
 app-stderr.txt
+
+## Package rilis yang di-upload manual ke GitHub Releases.
+## File ini sengaja TIDAK disimpan di git (.ukurannya besar dan bukan source code).
+DuckFlash-v*-win-x64.zip

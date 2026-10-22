@@ -10,9 +10,8 @@ Yang masih manual ditandai ⬜ — bagian itu butuh perangkat nyata atau akun Gi
 - [x] 274 unit test lulus (`dotnet vstest`, test live download dikecualikan)
 - [x] `.exe` single-file dipublish: `artifacts/publish/DuckFlash.exe` (155,4 MB)
 - [x] SHA256 dihitung dan disimpan di `artifacts/publish/DuckFlash.exe.sha256`
-      (`6d56a9c1...`, hasil publish ulang setelah koreksi nama akun)
-- [x] Metadata `.exe` terverifikasi: `ProductVersion 1.0.0`, `FileVersion 1.0.0.0`,
-      `CompanyName Dikdikduck`
+      (`148b8366...`, hasil publish ulang setelah koreksi nama akun ke `zee2434`)
+- [x] Metadata `.exe` terverifikasi: `ProductVersion 1.0.0`, `FileVersion 1.0.0.0`
 - [x] Metadata versi di `.exe` terbaca benar (ProductVersion `1.0.0`)
 - [x] Aplikasi hasil publish dijalankan sungguhan: window terbuka, platform-tools
       terdeteksi, logo tampil, tidak ada error XAML
@@ -20,11 +19,12 @@ Yang masih manual ditandai ⬜ — bagian itu butuh perangkat nyata atau akun Gi
 - [x] Release notes ditulis di `docs/RELEASE_NOTES.md`
 - [x] `README.md` diperbarui (fitur lengkap, batasan jujur, link repo dikoreksi)
 - [x] Sisa file uji (`app-stdout.txt`, `app-stderr.txt`) masuk `.gitignore`
-- [x] Nama akun GitHub diselaraskan ke `Dikdikduck` di semua file (README, LICENSE,
-      `CLAUDE.md`, `UpdateService.cs`, csproj, test) — sebelumnya `Dikdiduck`,
-      yang membuat fitur "Cek Versi Terbaru" menembak API repo yang tidak ada
 - [x] `git` 2.55.0 dan `gh` 2.103.0 terpasang
-- [x] Repo lokal di-init (branch `main`), commit pertama `15c381f`, tag `v1.0.0`
+- [x] Repo lokal di-init (branch `main`), commit `15c381f` + `11b7e3c`
+- [x] Repo GitHub dibuat di `github.com/zee2434/DuckFlash`, branch `main` sudah ter-push
+- [x] Nama akun GitHub diselaraskan ke `zee2434` di semua file (README, LICENSE,
+      `CLAUDE.md`, `UpdateService.cs`, csproj, test) — sebelumnya `Dikdiduck`/`Dikdikduck`,
+      yang membuat fitur "Cek Versi Terbaru" menembak API repo yang tidak ada
 
 ## Chek SHA256 hasil publish
 
@@ -37,7 +37,7 @@ Get-FileHash .\DuckFlash.exe -Algorithm SHA256
 Harus sama dengan isi file `DuckFlash.exe.sha256`:
 
 ```
-6d56a9c11f1f1f727c669f8395ff21acb46a6e4caa8f2e2fa9d2ea4caad065fd
+148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f
 ```
 
 Kalau berbeda, publish ulang dengan `.\scripts\publish.ps1`.
@@ -46,36 +46,21 @@ Kalau berbeda, publish ulang dengan `.\scripts\publish.ps1`.
 
 ## Yang masih manual ⬜
 
-### 1. Init git dan push ke GitHub
+### 1. Init git dan push ke GitHub — SUDAH SELESAI ✅
 
-`git` dan `gh` (GitHub CLI) sudah terpasang, folder sudah `git init`, sudah ada
-commit pertama (`15c381f`) dan tag lokal `v1.0.0`. Yang tersisa: buat repo di
-GitHub lalu push.
-
-**1a. Buat repo (repo-nya belum ada — URL `Dikdikduck/DuckFlash` masih 404):**
-
-Di browser, buka <https://github.com/new>, atau pakai `gh`:
-
-```powershell
-gh repo create DuckFlash --public --description "Tool sederhana untuk oprek Android (custom ROM, custom recovery) tanpa mengetik command adb/fastboot." --source . --remote origin --push
-```
-
-`gh` akan minta login lebih dulu kalau belum authenticated:
+- [x] `git` dan `gh` terpasang
+- [x] Repo lokal di-init, branch `main`
+- [x] Repo dibuat di GitHub: <https://github.com/zee2434/DuckFlash>
+- [x] `main` sudah ter-push (commit `11b7e3c`)
+- [ ] **Tag `v1.0.0` masih BELUM ter-push** — ini penyebab utama halaman Releases
+      masih kosong. Jalankan:
 
 ```powershell
-gh auth login
-```
-
-**1b. Kalau memakai `git` langsung (bukan `gh`):**
-
-```powershell
-git remote add origin https://github.com/Dikdikduck/DuckFlash.git
-git push -u origin main
 git push origin v1.0.0
 ```
 
-Pastikan `artifacts/` tidak ikut ter-commit — sudah ada di `.gitignore`, dan
-repo lokal yang sudah dibuat benar-benar 1,9 MB (tanpa `.exe`).
+Tag wajib ada di remote sebelum GitHub bisa membuat rilis. Tanpa tag, halaman
+Releases akan tetap kosong walaupun sudah "publish".
 
 ### 2. Uji di perangkat nyata (WAJIB sebelum rilis)
 
