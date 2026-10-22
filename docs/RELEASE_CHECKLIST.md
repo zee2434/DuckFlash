@@ -10,6 +10,9 @@ Yang masih manual ditandai ⬜ — bagian itu butuh perangkat nyata atau akun Gi
 - [x] 274 unit test lulus (`dotnet vstest`, test live download dikecualikan)
 - [x] `.exe` single-file dipublish: `artifacts/publish/DuckFlash.exe` (155,4 MB)
 - [x] SHA256 dihitung dan disimpan di `artifacts/publish/DuckFlash.exe.sha256`
+      (`6d56a9c1...`, hasil publish ulang setelah koreksi nama akun)
+- [x] Metadata `.exe` terverifikasi: `ProductVersion 1.0.0`, `FileVersion 1.0.0.0`,
+      `CompanyName Dikdikduck`
 - [x] Metadata versi di `.exe` terbaca benar (ProductVersion `1.0.0`)
 - [x] Aplikasi hasil publish dijalankan sungguhan: window terbuka, platform-tools
       terdeteksi, logo tampil, tidak ada error XAML
@@ -17,6 +20,11 @@ Yang masih manual ditandai ⬜ — bagian itu butuh perangkat nyata atau akun Gi
 - [x] Release notes ditulis di `docs/RELEASE_NOTES.md`
 - [x] `README.md` diperbarui (fitur lengkap, batasan jujur, link repo dikoreksi)
 - [x] Sisa file uji (`app-stdout.txt`, `app-stderr.txt`) masuk `.gitignore`
+- [x] Nama akun GitHub diselaraskan ke `Dikdikduck` di semua file (README, LICENSE,
+      `CLAUDE.md`, `UpdateService.cs`, csproj, test) — sebelumnya `Dikdiduck`,
+      yang membuat fitur "Cek Versi Terbaru" menembak API repo yang tidak ada
+- [x] `git` 2.55.0 dan `gh` 2.103.0 terpasang
+- [x] Repo lokal di-init (branch `main`), commit pertama `15c381f`, tag `v1.0.0`
 
 ## Chek SHA256 hasil publish
 
@@ -29,7 +37,7 @@ Get-FileHash .\DuckFlash.exe -Algorithm SHA256
 Harus sama dengan isi file `DuckFlash.exe.sha256`:
 
 ```
-43ff332781ffc070c426a55f9d8c8243a19ca7b6b786f2e48f986c8fa5c1513e
+6d56a9c11f1f1f727c669f8395ff21acb46a6e4caa8f2e2fa9d2ea4caad065fd
 ```
 
 Kalau berbeda, publish ulang dengan `.\scripts\publish.ps1`.
@@ -40,19 +48,34 @@ Kalau berbeda, publish ulang dengan `.\scripts\publish.ps1`.
 
 ### 1. Init git dan push ke GitHub
 
-Mesin ini belum punya `git` terpasang dan folder ini belum berupa git repo.
+`git` dan `gh` (GitHub CLI) sudah terpasang, folder sudah `git init`, sudah ada
+commit pertama (`15c381f`) dan tag lokal `v1.0.0`. Yang tersisa: buat repo di
+GitHub lalu push.
+
+**1a. Buat repo (repo-nya belum ada — URL `Dikdikduck/DuckFlash` masih 404):**
+
+Di browser, buka <https://github.com/new>, atau pakai `gh`:
 
 ```powershell
-# Instal git dulu (winget install --id Git.Git -e)
-git init
-git add .
-git commit -m "DuckFlash v1.0.0"
-git remote add origin https://github.com/Dikdikduck/DuckFlash.git
-git branch -M main
-git push -u origin main
+gh repo create DuckFlash --public --description "Tool sederhana untuk oprek Android (custom ROM, custom recovery) tanpa mengetik command adb/fastboot." --source . --remote origin --push
 ```
 
-Pastikan `artifacts/` tidak ikut ter-commit — sudah ada di `.gitignore`.
+`gh` akan minta login lebih dulu kalau belum authenticated:
+
+```powershell
+gh auth login
+```
+
+**1b. Kalau memakai `git` langsung (bukan `gh`):**
+
+```powershell
+git remote add origin https://github.com/Dikdikduck/DuckFlash.git
+git push -u origin main
+git push origin v1.0.0
+```
+
+Pastikan `artifacts/` tidak ikut ter-commit — sudah ada di `.gitignore`, dan
+repo lokal yang sudah dibuat benar-benar 1,9 MB (tanpa `.exe`).
 
 ### 2. Uji di perangkat nyata (WAJIB sebelum rilis)
 
@@ -97,10 +120,19 @@ Buat rilis baru di <https://github.com/Dikdikduck/DuckFlash/releases/new>:
 - Centang **Set as a pre-release** kalau belum siap, atau **Latest release** kalau sudah final.
 - Opsional: lampirkan juga `docs/logo.png` sebagai tampilan di halaman rilis.
 
-Catatan: `RELEASE_NOTES.md` memakai path relatif (`docs/screenshot-main.png`) untuk
-gambar. GitHub.me-resolve path relatif terhadap branch default, jadi gambarnya muncul
-kalau file-nya sudah ada di `main`. Kalau tidak muncul, hapus baris `<img ...>` itu
-dan lampirkan `docs/screenshot-main.png` sebagai asset rilis (lalu pakai URL asset-nya).
+Alternatif pakai `gh` (setelah `gh auth login`):
+
+```powershell
+gh release create v1.0.0 artifacts/publish/DuckFlash.exe artifacts/publish/DuckFlash.exe.sha256 --title "DuckFlash v1.0.0" --notes-file docs/RELEASE_NOTES.md
+```
+
+Tambahkan `--latest` kalau ingin ditandai sebagai rilis terbaru.
+
+Catatan gambar: `RELEASE_NOTES.md` memakai URL absolut
+(`https://raw.githubusercontent.com/Dikdikduck/DuckFlash/main/docs/screenshot-main.png`).
+Path relatif seperti `docs/screenshot-main.png` bisa gagal muncul di halaman rilis
+karena me-render relatif terhadap URL rilis, bukan branch `main`. Kalau gambar tidak
+tampil, cek dulu repo-nya sudah public dan branch `main` sudah ada file-nya.
 
 ### 4. Isi screenshot di README — SUDAH SELESAI ✅
 

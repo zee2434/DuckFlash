@@ -405,6 +405,8 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     sudah masuk `.gitignore`.
   - Publish: `artifacts/publish/DuckFlash.exe` (155,4 MB),
     SHA256 `43ff332781ffc070c426a55f9d8c8243a19ca7b6b786f2e48f986c8fa5c1513e`.
+    ⚠️ Hash ini SUDAH TIDAK LAGI BERLAKU — `.exe` dipublish ulang setelah koreksi
+    nama akun GitHub. Hash yang benar untuk diunggah: `6d56a9c11f1f1f727c669f8395ff21acb46a6e4caa8f2e2fa9d2ea4caad065fd`.
   - Verifikasi: `.exe` hasil publish dijalankan sungguhan, window terbuka, platform-tools
     terdeteksi, logo tampil, ProductVersion terbaca `1.0.0`, dan label versi
     "Application version / 1.0.0" terdeteksi lewat UI Automation.
@@ -432,3 +434,35 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
   - Bahasa aplikasi diubah ke Indonesia lewat `%LocalAppData%\DuckFlash\settings.json`
     (`{"Language": "Indonesian"}`) supaya screenshot berbahasa Indonesia.
 
+
+- **Sesi persiapan rilis: koreksi nama akun GitHub + repo lokal**
+  - PENTING: nama akun GitHub yang benar adalah `Dikdikduck` (dengan dua huruf k
+    berturut-turut: `Dikdik` + `duck`). Sebelumnya semua file memakai
+    `Dikdiduck`. Itu bug nyata, bukan cuma typo di dokumen:
+    `UpdateService.cs` menembak `https://api.github.com/repos/Dikdiduck/DuckFlash/releases/latest`
+    yang tidak ada, jadi fitur "Cek Versi Terbaru" akan selalu gagal diam-diam.
+  - Sudah diselaraskan di: `README.md`, `LICENSE`, `CLAUDE.md` (baris "Repo dan rilis"),
+    `src/DuckFlash/Services/UpdateService.cs`, `src/DuckFlash/DuckFlash.csproj`
+    (`<Company>`/`<Authors>`), `docs/RELEASE_CHECKLIST.md`, dan dua file test.
+  - Verifikasi setelah perubahan: `dotnet build -c Release` 0 warning / 0 error,
+    274 test lulus semua.
+  - Cek URL repo via API GitHub: `Dikdikduck/DuckFlash` mengembalikan HTTP 404,
+    artinya repo-nya BELUM dibuat di GitHub. Jadi langkah "buat repo" masih wajib.
+  - `git` (2.55.0) dan `gh` (2.103.0) dipasang lewat winget. Git Credential
+    Manager ikut terpasang, jadi auth bisa lewat browser.
+  - Repo lokal sudah di-init di branch `main`, commit pertama `15c381f`
+    ("DuckFlash v1.0.0"), tag lokal `v1.0.0` sudah dibuat.
+    Isi yang di-commit 1,9 MB - `artifacts/` dan `*.exe` tidak ikut karena
+    sudah ada di `.gitignore`. File gambar `docs/*.png` sengaja ikut commit
+    karena README dan release notes memakainya.
+  - `RELEASE_NOTES.md`: gambar utama diganti dari path relatif
+    (`docs/screenshot-main.png`) ke URL absolut
+    (`https://raw.githubusercontent.com/Dikdikduck/DuckFlash/main/docs/screenshot-main.png`).
+    Path relatif berisiko tidak muncul di halaman GitHub Releases karena
+    me-render relatif terhadap URL rilis, bukan branch `main`.
+  - MASIH MANUAL oleh pemilik proyek (tidak dikerjakan oleh Claude):
+    1. `gh auth login` lalu `gh repo create DuckFlash --public --source . --remote origin --push`
+       (atau buat repo di web, lalu `git push -u origin main`).
+    2. Uji di perangkat nyata (lihat `docs/RELEASE_CHECKLIST.md` bagian 2).
+    3. Unggah `DuckFlash.exe` + `DuckFlash.exe.sha256` ke GitHub Releases dengan
+       tag `v1.0.0`, deskripsi dari `docs/RELEASE_NOTES.md`.
