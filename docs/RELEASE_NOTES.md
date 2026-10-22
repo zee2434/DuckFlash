@@ -97,7 +97,6 @@ periksa sendiri kodenya. Kalau antivirus memblokir, tambahkan pengecualian untuk
 ## SHA256
 
 ```
-<<<<<<< HEAD
 148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f  DuckFlash.exe
 ```
 
