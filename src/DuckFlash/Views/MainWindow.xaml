@@ -1,0 +1,429 @@
+<Window x:Class="DuckFlash.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:DuckFlash.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:DuckFlash.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:MainWindowViewModel}"
+        Title="{Binding Text.AppTitle}"
+        Icon="pack://application:,,,/DuckFlash;component/Resources/Images/logo.png"
+        Height="720"
+        Width="1120"
+        MinHeight="560"
+        MinWidth="900"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:StringToVisibilityConverter x:Key="StringToVisibility" />
+
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.8" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="DropZone" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#5A5A5A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="AllowDrop" Value="True" />
+            <Setter Property="MinHeight" Value="56" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style x:Key="CompactButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+
+        <!-- ==================== STATUS BAR (BAWAH) ==================== -->
+        <StatusBar DockPanel.Dock="Bottom" Padding="16,6">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusText}" />
+            </StatusBarItem>
+            <Separator />
+            <StatusBarItem>
+                <TextBlock Text="{Binding PlatformToolsStatus}" Opacity="0.75" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <!-- Kolom utama: area tombol aksi di kiri, panel log live di kanan -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380" MinWidth="320" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ==================== AREA TOMBOL AKSI (KIRI) ==================== -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="16">
+
+                    <!-- Header: logo dan nama aplikasi -->
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                        <Image Source="pack://application:,,,/DuckFlash;component/Resources/Images/logo.png"
+                               Width="48"
+                               Height="48"
+                               Margin="0,0,10,0" />
+                        <TextBlock Text="{Binding Text.AppTitle}"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <!-- Platform-tools -->
+                    <TextBlock Text="{Binding Text.PlatformTools}" Style="{StaticResource SectionHeader}" />
+
+                    <TextBlock Text="{Binding PlatformToolsStatus}"
+                               Style="{StaticResource ValueText}" />
+
+                    <Button Content="{Binding Text.CheckStatus}"
+                            Command="{Binding RefreshPlatformToolsStatusCommand}" />
+
+                    <Button Content="{Binding Text.InstallPlatformTools}"
+                            Command="{Binding InstallPlatformToolsCommand}"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <ProgressBar Minimum="0"
+                                 Maximum="100"
+                                 Value="{Binding DownloadProgress, Mode=OneWay}"
+                                 Height="8"
+                                 Margin="0,4,0,16"
+                                 Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Perangkat -->
+                    <TextBlock Text="{Binding Text.Device}" Style="{StaticResource SectionHeader}" />
+
+                    <TextBlock Text="{Binding DeviceStatus}"
+                               Style="{StaticResource ValueText}" />
+
+                    <TextBlock Text="{Binding DeviceDetails}"
+                               Style="{StaticResource ValueText}"
+                               Visibility="{Binding DeviceDetails, Converter={StaticResource StringToVisibility}}" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="{Binding Text.CheckAdb}"
+                                Command="{Binding CheckAdbCommand}"
+                                Style="{StaticResource CompactButton}" />
+                        <Button Content="{Binding Text.CheckFastboot}"
+                                Command="{Binding CheckFastbootCommand}"
+                                Style="{StaticResource CompactButton}"
+                                Margin="0" />
+                    </StackPanel>
+
+                    <!-- Pemilih perangkat untuk mode multi-device -->
+                    <TextBlock Text="{Binding Text.DeviceSelector}"
+                               Style="{StaticResource FieldLabel}" />
+
+                    <ComboBox ItemsSource="{Binding AvailableSerials}"
+                              SelectedItem="{Binding SelectedSerial}"
+                              Margin="0,0,0,8"
+                              ToolTip="{Binding Text.DeviceSelectorTip}" />
+
+                    <TextBlock Text="{Binding Text.BootloaderState}"
+                               Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{Binding BootloaderState}"
+                               Style="{StaticResource ValueText}" />
+
+                    <TextBlock Text="{Binding Text.ActiveSlot}"
+                               Style="{StaticResource FieldLabel}" />
+                    <TextBlock Text="{Binding ActiveSlot}"
+                               Style="{StaticResource ValueText}" />
+
+                    <Button Content="{Binding Text.InstallDriver}"
+                            Command="{Binding InstallDriverCommand}"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,8,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Bootloader -->
+                    <TextBlock Text="{Binding Text.Bootloader}" Style="{StaticResource SectionHeader}" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}"
+                               TextWrapping="Wrap"
+                               Text="{Binding Text.BootloaderWarning}" />
+
+                    <Button Content="{Binding Text.UnlockBootloader}"
+                            Command="{Binding BootloaderActionCommand}"
+                            CommandParameter="Unlock"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Button Content="{Binding Text.LockBootloader}"
+                            Command="{Binding BootloaderActionCommand}"
+                            CommandParameter="Lock"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,0,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Flash -->
+                    <TextBlock Text="{Binding Text.FlashImage}" Style="{StaticResource SectionHeader}" />
+
+                    <Border Style="{StaticResource DropZone}"
+                            Drop="ImageDropHandler"
+                            DragOver="DragOverHandler"
+                            DragLeave="DragLeaveHandler">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text.DropImageHint}"
+                                       Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{Binding ImageFileName}"
+                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding ImageSize}"
+                                       Style="{StaticResource FieldLabel}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="{Binding Text.PickImage}"
+                            Click="PickImageButton_Click"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <TextBlock Text="{Binding Text.Partition}"
+                               Style="{StaticResource FieldLabel}" />
+
+                    <ComboBox ItemsSource="{Binding AvailablePartitions}"
+                              SelectedItem="{Binding Partition}"
+                              Margin="0,0,0,8"
+                              ToolTip="{Binding Text.PartitionTip}" />
+
+                    <Button Content="{Binding Text.Flash}"
+                            Command="{Binding FlashCommand}"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <!-- Hash -->
+                    <TextBlock Text="{Binding Text.Sha256}"
+                               Style="{StaticResource FieldLabel}" />
+                    <TextBox Text="{Binding ImageSha256, Mode=OneWay}"
+                             IsReadOnly="True"
+                             FontFamily="Consolas"
+                             FontSize="11"
+                             Margin="0,0,0,8" />
+
+                    <TextBlock Text="{Binding Text.ExpectedSha256}"
+                               Style="{StaticResource FieldLabel}" />
+                    <TextBox Text="{Binding ExpectedSha256, UpdateSourceTrigger=PropertyChanged}"
+                             FontFamily="Consolas"
+                             FontSize="11"
+                             Margin="0,0,0,8" />
+
+                    <Button Content="{Binding Text.CompareHash}"
+                            Command="{Binding CompareHashCommand}"
+                            Style="{StaticResource CompactButton}"
+                            Margin="0,0,0,4" />
+
+                    <TextBlock Text="{Binding HashComparisonResult}"
+                               TextWrapping="Wrap"
+                               Margin="0,0,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Sideload -->
+                    <TextBlock Text="{Binding Text.SideloadPackage}" Style="{StaticResource SectionHeader}" />
+
+                    <Border Style="{StaticResource DropZone}"
+                            Drop="PackageDropHandler"
+                            DragOver="DragOverHandler"
+                            DragLeave="DragLeaveHandler">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text.DropPackageHint}"
+                                       Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{Binding PackageFileName}"
+                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="{Binding Text.PickPackage}"
+                            Click="PickPackageButton_Click"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Button Content="{Binding Text.Sideload}"
+                            Command="{Binding SideloadCommand}"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,0,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Install APK -->
+                    <TextBlock Text="{Binding Text.InstallPackage}" Style="{StaticResource SectionHeader}" />
+
+                    <Border Style="{StaticResource DropZone}"
+                            Drop="ApkDropHandler"
+                            DragOver="DragOverHandler"
+                            DragLeave="DragLeaveHandler">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text.DropApkHint}"
+                                       Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{Binding ApkFileName}"
+                                       TextWrapping="Wrap"
+                                       FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding ApkSize}"
+                                       Style="{StaticResource FieldLabel}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="{Binding Text.PickApk}"
+                            Click="PickApkButton_Click"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Button Content="{Binding Text.InstallApk}"
+                            Command="{Binding InstallApkCommand}"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,0,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Reboot -->
+                    <TextBlock Text="{Binding Text.Reboot}" Style="{StaticResource SectionHeader}" />
+
+                    <Button Content="{Binding Text.RebootSystem}"
+                            Command="{Binding RebootCommand}"
+                            CommandParameter="System"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Button Content="{Binding Text.RebootRecovery}"
+                            Command="{Binding RebootCommand}"
+                            CommandParameter="Recovery"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Button Content="{Binding Text.RebootBootloader}"
+                            Command="{Binding RebootCommand}"
+                            CommandParameter="Bootloader"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Button Content="{Binding Text.RebootFastbootd}"
+                            Command="{Binding RebootCommand}"
+                            CommandParameter="Fastbootd"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <Separator Margin="0,16,0,16" />
+
+                    <!-- Update -->
+                    <TextBlock Text="{Binding Text.Update}" Style="{StaticResource SectionHeader}" />
+
+                    <TextBlock Text="{Binding UpdateStatus}"
+                               Style="{StaticResource ValueText}" />
+
+                    <Button Content="{Binding Text.CheckUpdate}"
+                            Command="{Binding CheckForUpdateCommand}"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,0,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
+                    <!-- Pengaturan -->
+                    <TextBlock Text="{Binding Text.Settings}" Style="{StaticResource SectionHeader}" />
+
+                    <TextBlock Text="{Binding Text.Language}"
+                               Style="{StaticResource FieldLabel}" />
+
+                    <ComboBox ItemsSource="{Binding AvailableLanguages}"
+                              SelectedItem="{Binding SelectedLanguageOption}"
+                              DisplayMemberPath="DisplayName"
+                              Margin="0,0,0,8" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}"
+                               Text="{Binding Text.AppVersion}" />
+                    <TextBlock Text="{Binding AppVersion}"
+                               FontFamily="Consolas"
+                               Margin="0,0,0,16" />
+
+                    <Separator Margin="0,16,0,0" />
+
+                    <!-- Wizard instalasi custom ROM -->
+                    <TextBlock Text="{Binding Text.RomWizard}"
+                               Style="{StaticResource SectionHeader}" />
+                    <Button Content="{Binding Text.StartRomWizard}"
+                            Click="OpenRomWizardButton_Click"
+                            Style="{StaticResource CompactButton}" />
+
+                    <!-- Debloater -->
+                    <TextBlock Text="{Binding Text.Debloat}"
+                               Style="{StaticResource SectionHeader}"
+                               Margin="0,16,0,8" />
+                    <Button Content="{Binding Text.OpenDebloat}"
+                            Click="OpenDebloatButton_Click"
+                            Style="{StaticResource CompactButton}" />
+
+                    <!-- Alat perangkat -->
+                    <TextBlock Text="{Binding Text.DeviceTools}"
+                               Style="{StaticResource SectionHeader}"
+                               Margin="0,16,0,8" />
+                    <Button Content="{Binding Text.OpenDeviceTools}"
+                            Click="OpenDeviceToolsButton_Click"
+                            Style="{StaticResource CompactButton}" />
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Garis pemisah -->
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#1E1E1E" />
+
+            <!-- ==================== PANEL LOG LIVE (KANAN) ==================== -->
+            <DockPanel Grid.Column="2" Margin="16">
+
+                <TextBlock DockPanel.Dock="Top"
+                           Text="{Binding Text.Log}"
+                           Style="{StaticResource SectionHeader}" />
+
+                <StackPanel DockPanel.Dock="Top"
+                            Orientation="Horizontal"
+                            Margin="0,0,0,8">
+                    <Button Content="{Binding Text.CopyLog}"
+                            Command="{Binding CopyLogCommand}"
+                            Style="{StaticResource CompactButton}" />
+                    <Button Content="{Binding Text.ClearLog}"
+                            Command="{Binding ClearLogCommand}"
+                            Style="{StaticResource CompactButton}"
+                            Margin="0" />
+                </StackPanel>
+
+                <ListBox x:Name="LogListBox"
+                         ItemsSource="{Binding LogEntries}"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         VerticalContentAlignment="Top"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Formatted}"
+                                       TextWrapping="NoWrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+            </DockPanel>
+        </Grid>
+    </DockPanel>
+</Window>

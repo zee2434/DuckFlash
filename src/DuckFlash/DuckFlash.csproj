@@ -1,0 +1,73 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>DuckFlash</RootNamespace>
+    <AssemblyName>DuckFlash</AssemblyName>
+<<<<<<< HEAD
+    <Company>zee2434</Company>
+    <Product>DuckFlash</Product>
+    <Authors>zee2434</Authors>
+=======
+    <Company>Dikdikduck</Company>
+    <Product>DuckFlash</Product>
+    <Authors>Dikdikduck</Authors>
+>>>>>>> 15c381f (DuckFlash v1.0.0)
+    <Description>Tool sederhana untuk oprek Android (custom ROM, custom recovery) tanpa mengetik command adb/fastboot.</Description>
+    <!-- Ikon untuk DuckFlash.exe di Windows Explorer dan taskbar. -->
+    <ApplicationIcon>Resources\Images\DuckFlash.ico</ApplicationIcon>
+    <!--
+      Versi aplikasi. Angka ini dibaca UpdateService dari metadata assembly,
+      lalu dibandingkan dengan tag_name rilis terbaru di GitHub Releases.
+      Jadi setiap rilis baru HARUS menaikkan nomor di sini.
+    -->
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\**\*.json" CopyToOutputDirectory="PreserveIfChanged" />
+  </ItemGroup>
+
+  <!-- Logo aplikasi. PENTING: build action Resource (bukan Content), supaya file
+       ikut tertanam di dalam assembly. Aplikasi dipublish sebagai .exe single-file,
+       jadi file terpisah di folder output tidak akan ikut terbawa.
+       Dipakai di XAML lewat pack URI:
+       pack://application:,,,/DuckFlash;component/Resources/Images/logo.png -->
+  <ItemGroup>
+    <Resource Include="Resources\Images\*.png" />
+  </ItemGroup>
+
+  <!-- Daftar pemetaan error ditanam di dalam assembly supaya tetap terbaca
+       saat aplikasi dipublish sebagai .exe single-file.
+
+       Penting: WithCulture="false" wajib dipakai. Tanpa itu, MSBuild menganggap
+       "error-mappings.en" dan "strings.id" sebagai nama budaya dan memindahkannya
+       ke satellite assembly (en/DuckFlash.resources.dll, id/DuckFlash.resources.dll).
+       Akibatnya .exe hasil publish single-file tidak ikut membawa katalog bahasa. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\error-mappings.json" LogicalName="DuckFlash.Resources.error-mappings.json" WithCulture="false" />
+    <EmbeddedResource Include="Resources\error-mappings.en.json" LogicalName="DuckFlash.Resources.error-mappings.en.json" WithCulture="false" />
+    <EmbeddedResource Include="Resources\strings.id.json" LogicalName="DuckFlash.Resources.strings.id.json" WithCulture="false" />
+    <EmbeddedResource Include="Resources\strings.en.json" LogicalName="DuckFlash.Resources.strings.en.json" WithCulture="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DuckFlash.Tests" />
+  </ItemGroup>
+
+  <!-- WPF implicit usings tidak menyertakan System.IO dan System.Net.Http. -->
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+</Project>

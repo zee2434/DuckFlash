@@ -1,0 +1,11 @@
+<Project>
+  <!--
+    Restore selalu memakai NuGet.config di repo ini.
+    Alasan: file konfigurasi NuGet machine-level di beberapa mesin (Visual Studio
+    FallbackLocation) bisa gagal dibaca dan menggagalkan restore meski paketnya
+    ada di nuget.org.
+  -->
+  <PropertyGroup>
+    <RestoreConfigFile>$(MSBuildThisFileDirectory)NuGet.config</RestoreConfigFile>
+  </PropertyGroup>
+</Project>

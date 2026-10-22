@@ -1,0 +1,232 @@
+<Window x:Class="DuckFlash.Views.RomInstallWizardWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:conv="clr-namespace:DuckFlash.Converters"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:DuckFlash.ViewModels"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vm:RomInstallWizardViewModel}"
+        Title="{Binding Text.RomWizard}"
+        Icon="pack://application:,,,/DuckFlash;component/Resources/Images/logo.png"
+        Height="700"
+        Width="1080"
+        MinHeight="560"
+        MinWidth="900"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <Style x:Key="SectionHeader" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Opacity" Value="0.8" />
+            <Setter Property="Margin" Value="0,0,0,4" />
+        </Style>
+
+        <Style x:Key="ValueText" TargetType="TextBlock">
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+
+        <Style x:Key="DropZone" TargetType="Border">
+            <Setter Property="BorderBrush" Value="#5A5A5A" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="10" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+            <Setter Property="AllowDrop" Value="True" />
+            <Setter Property="MinHeight" Value="56" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+
+        <Style x:Key="CompactButton" TargetType="Button">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="Margin" Value="0,0,8,0" />
+            <Setter Property="HorizontalAlignment" Value="Left" />
+        </Style>
+    </Window.Resources>
+
+    <DockPanel>
+
+        <!-- Status bar -->
+        <StatusBar DockPanel.Dock="Bottom" Padding="16,6">
+            <StatusBarItem>
+                <TextBlock Text="{Binding StatusText}" />
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="300" MinWidth="240" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Daftar langkah -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="16">
+
+                    <TextBlock Text="{Binding DeviceStatus}"
+                               Style="{StaticResource ValueText}" />
+
+                    <TextBlock Text="{Binding DeviceDetails}"
+                               Style="{StaticResource ValueText}" />
+
+                    <TextBlock Style="{StaticResource FieldLabel}"
+                               Text="{Binding BootloaderState}" />
+
+                    <ListBox ItemsSource="{Binding Steps}"
+                             BorderThickness="0"
+                             Background="Transparent"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,4">
+                                    <TextBlock Text="{Binding Title}"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Description}"
+                                               Opacity="0.75"
+                                               FontSize="11"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <GridSplitter Grid.Column="1"
+                          Width="4"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#1E1E1E" />
+
+            <!-- Area kerja langkah -->
+            <Grid Grid.Column="2" Margin="16">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Judul dan deskripsi langkah aktif -->
+                <StackPanel Grid.Row="0">
+                    <TextBlock Text="{Binding CurrentStep.Title}"
+                               FontSize="17"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding CurrentStep.Description}"
+                               Opacity="0.85"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,12" />
+                </StackPanel>
+
+                <!-- File yang dipilih -->
+                <StackPanel Grid.Row="1">
+
+                    <Border Style="{StaticResource DropZone}"
+                            Drop="RecoveryDropHandler"
+                            DragOver="DragOverHandler"
+                            DragLeave="DragLeaveHandler">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text.DropImageHint}"
+                                       Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{Binding RecoveryFileName}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding RecoverySha256}"
+                                       FontFamily="Consolas"
+                                       FontSize="10"
+                                       Opacity="0.7"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="{Binding Text.PickRecovery}"
+                            Click="PickRecoveryButton_Click" />
+
+                    <Border Style="{StaticResource DropZone}"
+                            Drop="RomDropHandler"
+                            DragOver="DragOverHandler"
+                            DragLeave="DragLeaveHandler"
+                            Margin="0,12,0,8">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text.DropRomHint}"
+                                       Style="{StaticResource FieldLabel}" />
+                            <TextBlock Text="{Binding RomFileName}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding RomSha256}"
+                                       FontFamily="Consolas"
+                                       FontSize="10"
+                                       Opacity="0.7"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Button Content="{Binding Text.PickRomPackage}"
+                            Click="PickRomButton_Click" />
+
+                </StackPanel>
+
+                <!-- Log -->
+                <ListBox Grid.Row="2"
+                         ItemsSource="{Binding LogEntries}"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         VerticalContentAlignment="Top"
+                         ScrollViewer.HorizontalScrollBarVisibility="Auto">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Formatted}"
+                                       TextWrapping="NoWrap" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <!-- Navigasi -->
+                <StackPanel Grid.Row="3"
+                            Orientation="Horizontal"
+                            Margin="0,12,0,0">
+                    <Button Content="{Binding Text.BackStep}"
+                            Command="{Binding BackStepCommand}"
+                            IsEnabled="{Binding CanGoBack}"
+                            Style="{StaticResource CompactButton}" />
+
+                    <Button Content="{Binding Text.RunStep}"
+                            Command="{Binding RunCurrentStepCommand}"
+                            IsEnabled="{Binding CanRunStep}"
+                            Style="{StaticResource CompactButton}"
+                            Margin="0,0,16,0" />
+
+                    <Button Content="{Binding Text.NextStep}"
+                            Command="{Binding NextStepCommand}"
+                            IsEnabled="{Binding CanGoNext}"
+                            Style="{StaticResource CompactButton}"
+                            Margin="0,0,16,0" />
+
+                    <Button Content="{Binding Text.SkipStep}"
+                            Command="{Binding SkipStepCommand}"
+                            IsEnabled="{Binding CanSkipStep}"
+                            Style="{StaticResource CompactButton}" />
+                </StackPanel>
+
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
