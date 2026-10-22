@@ -1,0 +1,81 @@
+{
+  "mappings": [
+    {
+      "id": "device_unauthorized",
+      "patterns": [ "device unauthorized", "unauthorized" ],
+      "title": "Perangkat belum diizinkan",
+      "explanation": "Perangkatnya terhubung, tapi Anda belum menyetujui dialog USB debugging di perangkat.",
+      "solution": "Cek layar perangkat, lalu tekan \"Allow USB debugging\" (Izinkan USB debugging). Jika dialog tidak muncul, cabut kabel USB lalu colokkan kembali, atau aktifkan \"Revoke USB debugging authorizations\" di Opsi pengembang."
+    },
+    {
+      "id": "no_permissions",
+      "patterns": [ "no permissions", "insufficient permissions", "access denied" ],
+      "title": "Tidak ada izin akses USB",
+      "explanation": "Windows menolak adb atau fastboot mengakses perangkat USB.",
+      "solution": "Jalankan DuckFlash sebagai Administrator, lalu pasang driver USB Google lewat tombol \"Pasang Driver USB\"."
+    },
+    {
+      "id": "waiting_for_any_device",
+      "patterns": [ "waiting for any device", "wait for device" ],
+      "title": "Menunggu perangkat",
+      "explanation": "Perintah sudah dijalankan tapi belum ada perangkat yang terdeteksi.",
+      "solution": "Colokkan perangkat dengan kabel USB, lalu pastikan USB debugging sudah dinyalakan di Opsi pengembang."
+    },
+    {
+      "id": "fastboot_no_devices",
+      "patterns": [ "fastboot: no devices" ],
+      "title": "Perangkat tidak ditemukan dalam mode fastboot",
+      "explanation": "Tidak ada perangkat yang terdeteksi dalam mode fastboot.",
+      "solution": "Reboot perangkat ke bootloader (Volume Turun + Daya), lalu colokkan kembali kabel USB."
+    },
+    {
+      "id": "no_devices_found",
+      "patterns": [ "no devices/emulators found", "error: no devices found" ],
+      "title": "Perangkat tidak ditemukan",
+      "explanation": "Tidak ada perangkat yang terdeteksi oleh adb.",
+      "solution": "Colokkan perangkat dan pastikan USB debugging aktif. Kalau perangkat terbaca Windows tapi tidak muncul di adb, pasang driver USB Google."
+    },
+    {
+      "id": "device_offline",
+      "patterns": [ "device offline" ],
+      "title": "Perangkat offline",
+      "explanation": "Perangkat terdeteksi tapi koneksinya terputus.",
+      "solution": "Cabut dan colokkan kembali kabel USB, atau restart server adb."
+    },
+    {
+      "id": "bootloader_locked",
+      "patterns": [ "flashing is not allowed", "bootloader is locked", "device is locked" ],
+      "title": "Bootloader terkunci",
+      "explanation": "Bootloader perangkat masih terkunci sehingga partisi tidak boleh ditulis.",
+      "solution": "Unlock bootloader terlebih dahulu. Perhatian: proses ini akan menghapus semua data di perangkat."
+    },
+    {
+      "id": "partition_not_found",
+      "patterns": [ "unknown partition", "partition does not exist", "invalid partition" ],
+      "title": "Partisi tidak dikenal",
+      "explanation": "Partisi yang dipilih tidak ada di perangkat ini.",
+      "solution": "Pilih partisi dari daftar yang tersedia: recovery, boot, vendor_boot, init_boot, vbmeta, atau dtbo."
+    },
+    {
+      "id": "file_not_found",
+      "patterns": [ "cannot stat", "no such file or directory", "is not recognized" ],
+      "title": "File tidak ditemukan",
+      "explanation": "File yang ditunjuk tidak ada di lokasi tersebut.",
+      "solution": "Pilih ulang file yang mau di-flash."
+    },
+    {
+      "id": "sideload_failed",
+      "patterns": [ "failed to install", "unexpected end of file" ],
+      "title": "Sideload gagal",
+      "explanation": "File zip yang dikirim tidak bisa di-install oleh perangkat.",
+      "solution": "Pastikan file zip bukan zip biasa, tapi zip update yang dibuat dengan tool recovery. Pastikan perangkat sudah dalam mode recovery."
+    },
+    {
+      "id": "remote_failed",
+      "patterns": [ "failed (remote:" ],
+      "title": "Perangkat menolak perintah",
+      "explanation": "Perangkat menolak perintah yang dikirim, biasanya karena partisi terkunci atau bootloader masih terkunci.",
+      "solution": "Pastikan bootloader sudah di-unlock, dan pastikan partisi yang dipilih benar. Lihat detail pesan di bawah ini."
+    }
+  ]
+}

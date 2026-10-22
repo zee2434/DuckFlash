@@ -1,0 +1,34 @@
+## Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+
+## Visual Studio / Rider
+.vs/
+.idea/
+*.sln.docstates
+
+## Test results
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+*.coverage
+
+## Publish / releases
+publish/
+artifacts/
+*.exe
+!src/DuckFlash/**/*.exe
+
+## OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Output dari menjalankan aplikasi secara manual saat development
+app-stdout.txt
+app-stderr.txt

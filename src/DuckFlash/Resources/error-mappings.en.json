@@ -1,0 +1,81 @@
+{
+  "mappings": [
+    {
+      "id": "device_unauthorized",
+      "patterns": [ "device unauthorized", "unauthorized" ],
+      "title": "Device not authorized",
+      "explanation": "The device is connected, but you have not approved the USB debugging dialog on the device yet.",
+      "solution": "Check the device screen and press \"Allow USB debugging\". If the dialog does not appear, unplug the USB cable and plug it back in, or enable \"Revoke USB debugging authorizations\" in Developer options."
+    },
+    {
+      "id": "no_permissions",
+      "patterns": [ "no permissions", "insufficient permissions", "access denied" ],
+      "title": "No USB access permission",
+      "explanation": "Windows refused to let adb or fastboot access the USB device.",
+      "solution": "Run DuckFlash as Administrator, then install the Google USB driver with the \"Install USB Driver\" button."
+    },
+    {
+      "id": "waiting_for_any_device",
+      "patterns": [ "waiting for any device", "wait for device" ],
+      "title": "Waiting for device",
+      "explanation": "The command ran but no device was detected yet.",
+      "solution": "Plug the device in with a USB cable and make sure USB debugging is turned on in Developer options."
+    },
+    {
+      "id": "fastboot_no_devices",
+      "patterns": [ "fastboot: no devices" ],
+      "title": "No device found in fastboot mode",
+      "explanation": "No device was detected in fastboot mode.",
+      "solution": "Reboot the device into the bootloader (Volume Down + Power), then plug the USB cable back in."
+    },
+    {
+      "id": "no_devices_found",
+      "patterns": [ "no devices/emulators found", "error: no devices found" ],
+      "title": "Device not found",
+      "explanation": "No device was detected by adb.",
+      "solution": "Plug the device in and make sure USB debugging is on. If Windows sees the device but adb does not, install the Google USB driver."
+    },
+    {
+      "id": "device_offline",
+      "patterns": [ "device offline" ],
+      "title": "Device offline",
+      "explanation": "The device was detected but the connection dropped.",
+      "solution": "Unplug and replug the USB cable, or restart the adb server."
+    },
+    {
+      "id": "bootloader_locked",
+      "patterns": [ "flashing is not allowed", "bootloader is locked", "device is locked" ],
+      "title": "Bootloader is locked",
+      "explanation": "The device bootloader is still locked, so partitions cannot be written.",
+      "solution": "Unlock the bootloader first. Warning: the unlock process erases all data on the device."
+    },
+    {
+      "id": "partition_not_found",
+      "patterns": [ "unknown partition", "partition does not exist", "invalid partition" ],
+      "title": "Unknown partition",
+      "explanation": "The selected partition does not exist on this device.",
+      "solution": "Pick a partition from the available list: recovery, boot, vendor_boot, init_boot, vbmeta, or dtbo."
+    },
+    {
+      "id": "file_not_found",
+      "patterns": [ "cannot stat", "no such file or directory", "is not recognized" ],
+      "title": "File not found",
+      "explanation": "The file that was pointed at does not exist in that location.",
+      "solution": "Select the file to flash again."
+    },
+    {
+      "id": "sideload_failed",
+      "patterns": [ "failed to install", "unexpected end of file" ],
+      "title": "Sideload failed",
+      "explanation": "The zip file that was sent could not be installed by the device.",
+      "solution": "Make sure the zip is an update package made with a recovery tool, not an ordinary zip. Make sure the device is in recovery mode."
+    },
+    {
+      "id": "remote_failed",
+      "patterns": [ "failed (remote:" ],
+      "title": "Device rejected the command",
+      "explanation": "The device rejected the command that was sent, usually because the partition is locked or the bootloader is still locked.",
+      "solution": "Make sure the bootloader is unlocked and the selected partition is correct. See the raw message below."
+    }
+  ]
+}

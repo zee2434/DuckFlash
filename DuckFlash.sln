@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F69A4022-F168-427F-8E8D-6B63BA2A8C6D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuckFlash", "src\DuckFlash\DuckFlash.csproj", "{00E27178-1771-44BB-9F5F-A21F6351A25B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{51EFDF91-92D9-4938-AEB1-93527927B85D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DuckFlash.Tests", "tests\DuckFlash.Tests\DuckFlash.Tests.csproj", "{5DC5088E-082B-4806-8388-4DB4F4122F59}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{00E27178-1771-44BB-9F5F-A21F6351A25B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E27178-1771-44BB-9F5F-A21F6351A25B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E27178-1771-44BB-9F5F-A21F6351A25B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E27178-1771-44BB-9F5F-A21F6351A25B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DC5088E-082B-4806-8388-4DB4F4122F59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DC5088E-082B-4806-8388-4DB4F4122F59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DC5088E-082B-4806-8388-4DB4F4122F59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DC5088E-082B-4806-8388-4DB4F4122F59}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{00E27178-1771-44BB-9F5F-A21F6351A25B} = {F69A4022-F168-427F-8E8D-6B63BA2A8C6D}
+		{5DC5088E-082B-4806-8388-4DB4F4122F59} = {51EFDF91-92D9-4938-AEB1-93527927B85D}
+	EndGlobalSection
+EndGlobal
