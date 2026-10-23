@@ -7,7 +7,6 @@ Tool desktop Windows untuk membantu pemula mengoprek Android (custom ROM, custom
 
 Dibuat dengan C# dan WPF (.NET 8), lisensi MIT, proyek open source.
 
-Versi saat ini: **v1.0.0**
 
 ## Tampilan
 
@@ -83,7 +82,6 @@ periksa sendiri kodenya. Kalau antivirus memblokir, tambahkan pengecualian untuk
 Unduh `DuckFlash.exe` dari halaman [Releases](https://github.com/Dikdikduck/DuckFlash/releases),
 =======
 Unduh `DuckFlash.exe` dari halaman [Releases](https://github.com/Dikdikduck/DuckFlash/releases),
->>>>>>> 15c381f (DuckFlash v1.0.0)
 lalu jalankan. Tidak perlu instalasi, tidak perlu Python, tidak perlu .NET runtime
 (versi rilis sudah self-contained).
 
@@ -185,10 +183,9 @@ bahasa Indonesia, jadi tidak perlu dekut error mentah.
 Butuh .NET 8 SDK.
 
 ```powershell
-git clone https://github.com/Dikdikduck/DuckFlash.git
+git clone https://github.com/zee2434/DuckFlash.git
 =======
-git clone https://github.com/Dikdikduck/DuckFlash.git
->>>>>>> 15c381f (DuckFlash v1.0.0)
+git clone https://github.com/zee2434/DuckFlash.git
 cd DuckFlash
 dotnet build DuckFlash.sln -c Release
 dotnet test DuckFlash.sln
