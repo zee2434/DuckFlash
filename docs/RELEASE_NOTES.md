@@ -5,8 +5,7 @@ Rilis pertama DuckFlash.
 Tool desktop Windows untuk membantu pemula mengoprek Android (custom ROM, custom
 recovery) **tanpa perlu mengetik command `adb` atau `fastboot`**. Tinggal klik tombolnya.
 
-<<<<<<< HEAD
-<img src="https://raw.githubusercontent.com/zee2434/DuckFlash/main/docs/screenshot-main.png" alt="Tampilan DuckFlash" width="900" />
+<img src="https://raw.githubusercontent.com/Dikdikduck/DuckFlash/main/docs/screenshot-main.png" alt="Tampilan DuckFlash" width="900" />
 =======
 <img src="docs/screenshot-main.png" alt="Tampilan DuckFlash" width="900" />
 >>>>>>> 15c381f (DuckFlash v1.0.0)
@@ -98,7 +97,6 @@ periksa sendiri kodenya. Kalau antivirus memblokir, tambahkan pengecualian untuk
 ## SHA256
 
 ```
-<<<<<<< HEAD
 148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f  DuckFlash.exe
 ```
 

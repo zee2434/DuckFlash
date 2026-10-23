@@ -404,13 +404,7 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
   - `app-stdout.txt` dan `app-stderr.txt` (sisa menjalankan aplikasi secara manual)
     sudah masuk `.gitignore`.
   - Publish: `artifacts/publish/DuckFlash.exe` (155,4 MB),
-    SHA256 `43ff332781ffc070c426a55f9d8c8243a19ca7b6b786f2e48f986c8fa5c1513e`.
-<<<<<<< HEAD
-    ⚠️ Hash ini SUDAH TIDAK LAGI BERLAKU — `.exe` dipublish ulang beberapa kali
-    setelah koreksi nama akun GitHub. Hash yang benar untuk diunggah:
-    `148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f`.
-=======
->>>>>>> 15c381f (DuckFlash v1.0.0)
+    SHA256 `148b836698ed5f2e478215a63b124542ec8448b4377fcdb4f05b06519b40a58f`.
   - Verifikasi: `.exe` hasil publish dijalankan sungguhan, window terbuka, platform-tools
     terdeteksi, logo tampil, ProductVersion terbaca `1.0.0`, dan label versi
     "Application version / 1.0.0" terdeteksi lewat UI Automation.
@@ -442,9 +436,9 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
 
 - **Sesi persiapan rilis: koreksi nama akun GitHub + repo lokal**
   - PENTING: pada sesi ini diasumsikan nama akun GitHub adalah `Dikdikduck`.
-    Asumsi itu SALAH - nama yang benar `zee2434` (lihat sesi berikutnya di bawah).
+    Asumsi itu SALAH - nama yang benar `Dikdikduck` (lihat sesi berikutnya di bawah).
     Semua perubahan `Dikdikduck` yang dilakukan sesi ini sudah ditimpa lagi
-    menjadi `zee2434`.
+    menjadi `Dikdikduck`.
   - Yang benar dari sesi ini: `UpdateService.cs` memang perlu URL repo yang
     benar, dan itu bug nyata (bukan cuma typo di dokumen) - kalau repo tidak ada,
     fitur "Cek Versi Terbaru" gagal diam-diam.
@@ -462,7 +456,7 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     karena README dan release notes memakainya.
   - `RELEASE_NOTES.md`: gambar utama diganti dari path relatif
     (`docs/screenshot-main.png`) ke URL absolut
-    (`https://raw.githubusercontent.com/zee2434/DuckFlash/main/docs/screenshot-main.png`).
+    (`https://raw.githubusercontent.com/Dikdikduck/DuckFlash/main/docs/screenshot-main.png`).
     Path relatif berisiko tidak muncul di halaman GitHub Releases karena
     me-render relatif terhadap URL rilis, bukan branch `main`.
   - MASIH MANUAL oleh pemilik proyek (tidak dikerjakan oleh Claude):
@@ -471,12 +465,12 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     2. Uji di perangkat nyata (lihat `docs/RELEASE_CHECKLIST.md` bagian 2).
     3. Unggah `DuckFlash.exe` + `DuckFlash.exe.sha256` ke GitHub Releases dengan
        tag `v1.0.0`, deskripsi dari `docs/RELEASE_NOTES.md`.
-- **Sesi perbaikan rilis: username sebenarnya zee2434 + tag belum ter-push**
-  - KOREKSI PENTING: nama akun GitHub yang benar adalah `zee2434`, bukan
+- **Sesi perbaikan rilis: username sebenarnya Dikdikduck + tag belum ter-push**
+  - KOREKSI PENTING: nama akun GitHub yang benar adalah `Dikdikduck`, bukan
     `Dikdikduck`. Semua jejak `Dikdikduck`/`Dikdiduck` sudah diganti ke
-    `zee2434` di README, LICENSE, CLAUDE.md, `UpdateService.cs`, csproj,
+    `Dikdikduck` di README, LICENSE, CLAUDE.md, `UpdateService.cs`, csproj,
     dan test. Verifikasi dengan menyorot string di dalam `.exe` hasil publish:
-    `api.github.com/repos/zee2434/DuckFlash/releases/latest`.
+    `api.github.com/repos/Dikdikduck/DuckFlash/releases/latest`.
   - PENYEBAB UTAMA "Releases kosong": tag `v1.0.0` hanya ada di repo LOKAL.
     `git ls-remote --tags origin` mengembalikan kosong - tidak ada tag di remote.
     GitHub hanya bisa membuat rilis dari tag yang sudah ada di remote, jadi
@@ -496,6 +490,3 @@ Tulis di sini hal yang perlu diingat sesi berikutnya (keputusan desain, bug yang
     2. Upload `DuckFlash.exe` + `DuckFlash.exe.sha256` ke GitHub Releases
        dengan tag `v1.0.0`, deskripsi dari `docs/RELEASE_NOTES.md`.
     3. Ubah repo jadi public (kalau mau APK ini bisa diunduh orang lain).
-    4. Uji di perangkat nyata (lihat `docs/RELEASE_CHECKLIST.md` bagian 2).
-=======
->>>>>>> 15c381f (DuckFlash v1.0.0)

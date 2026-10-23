@@ -13,7 +13,7 @@ public sealed class UpdateService : IUpdateService
     /// cukup untuk pemakaian pribadi.
     /// </summary>
     private const string LatestReleaseApi =
-        "https://api.github.com/repos/zee2434/DuckFlash/releases/latest";
+        "https://api.github.com/repos/Dikdikduck/DuckFlash/releases/latest";
 
     private readonly HttpClient _httpClient;
     private readonly string _currentVersion;

@@ -790,7 +790,7 @@ public class MainWindowViewModelTests
                 IsUpdateAvailable = true,
                 LatestVersion = "v2.0.0",
                 CurrentVersion = "1.0.0",
-                ReleaseUrl = "https://github.com/zee2434/DuckFlash/releases/tag/v2.0.0"
+                ReleaseUrl = "https://github.com/Dikdikduck/DuckFlash/releases/tag/v2.0.0"
             }
         };
 
