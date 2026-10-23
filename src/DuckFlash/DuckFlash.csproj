@@ -8,15 +8,9 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>DuckFlash</RootNamespace>
     <AssemblyName>DuckFlash</AssemblyName>
-<<<<<<< HEAD
     <Company>zee2434</Company>
     <Product>DuckFlash</Product>
     <Authors>zee2434</Authors>
-=======
-    <Company>Dikdikduck</Company>
-    <Product>DuckFlash</Product>
-    <Authors>Dikdikduck</Authors>
->>>>>>> 15c381f (DuckFlash v1.0.0)
     <Description>Tool sederhana untuk oprek Android (custom ROM, custom recovery) tanpa mengetik command adb/fastboot.</Description>
     <!-- Ikon untuk DuckFlash.exe di Windows Explorer dan taskbar. -->
     <ApplicationIcon>Resources\Images\DuckFlash.ico</ApplicationIcon>

@@ -29,11 +29,7 @@ public class UpdateServiceTests
         const string json = """
         {
           "tag_name": "v1.2.0",
-<<<<<<< HEAD
           "html_url": "https://github.com/zee2434/DuckFlash/releases/tag/v1.2.0",
-=======
-          "html_url": "https://github.com/Dikdikduck/DuckFlash/releases/tag/v1.2.0",
->>>>>>> 15c381f (DuckFlash v1.0.0)
           "assets": [
             { "name": "DuckFlash.exe", "browser_download_url": "https://example.com/DuckFlash.exe" }
           ]
@@ -57,11 +53,7 @@ public class UpdateServiceTests
         const string json = """
         {
           "tag_name": "v1.0.0",
-<<<<<<< HEAD
           "html_url": "https://github.com/zee2434/DuckFlash/releases/tag/v1.0.0",
-=======
-          "html_url": "https://github.com/Dikdikduck/DuckFlash/releases/tag/v1.0.0",
->>>>>>> 15c381f (DuckFlash v1.0.0)
           "assets": []
         }
         """;
@@ -103,11 +95,7 @@ public class UpdateServiceTests
         const string json = """
         {
           "tag_name": "v1.5.0",
-<<<<<<< HEAD
           "html_url": "https://github.com/zee2434/DuckFlash/releases/tag/v1.5.0",
-=======
-          "html_url": "https://github.com/Dikdikduck/DuckFlash/releases/tag/v1.5.0",
->>>>>>> 15c381f (DuckFlash v1.0.0)
           "assets": [
             { "name": "checksums.txt", "browser_download_url": "https://example.com/checksums.txt" }
           ]
@@ -120,11 +108,7 @@ public class UpdateServiceTests
 
         Assert.True(result.IsCheckSuccessful);
         Assert.Null(result.DownloadUrl);
-<<<<<<< HEAD
         Assert.Equal("https://github.com/zee2434/DuckFlash/releases/tag/v1.5.0", result.ReleaseUrl);
-=======
-        Assert.Equal("https://github.com/Dikdikduck/DuckFlash/releases/tag/v1.5.0", result.ReleaseUrl);
->>>>>>> 15c381f (DuckFlash v1.0.0)
     }
 
     [Fact]
