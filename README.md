@@ -227,7 +227,6 @@ MIT. Lihat [LICENSE](LICENSE).
 
 ## Repo
 
-<https://github.com/Dikdikduck/DuckFlash>
 =======
-<https://github.com/Dikdikduck/DuckFlash>
->>>>>>> 15c381f (DuckFlash v1.0.0)
+<https://github.com/zee2434/DuckFlash>
+>>>>>>> 15c381f (DuckFlash)
