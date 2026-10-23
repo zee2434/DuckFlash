@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "DuckFlash",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build DuckFlash",
+      "program": "${workspaceFolder}\\src\\DuckFlash\\bin\\Debug\\net8.0-windows\\DuckFlash.dll",
+      "cwd": "${workspaceFolder}\\src\\DuckFlash",
+      "console": "internalConsole",
+      "stopAtEntry": false
+    }
+  ]
+}
