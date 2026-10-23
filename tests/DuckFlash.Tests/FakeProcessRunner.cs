@@ -24,6 +24,9 @@ public sealed class FakeProcessRunner : IProcessRunner
     /// <summary>Berapa kali RunAsync dipanggil.</summary>
     public int CallCount { get; private set; }
 
+    /// <summary>Output yang dikirim lewat event, bila ingin berbeda dari hasil command.</summary>
+    public string? StandardOutputToEmit { get; set; }
+
     /// <summary>Exception yang dilempar pada pemanggilan berikutnya, kalau ada.</summary>
     public Exception? ThrowOnRun { get; set; }
 
@@ -49,7 +52,9 @@ public sealed class FakeProcessRunner : IProcessRunner
         CommandStarting?.Invoke(this, new ProcessCommandEventArgs(
             $"{fileName} {string.Join(' ', LastArguments)}"));
 
-        foreach (var line in _result.StandardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        var standardOutput = StandardOutputToEmit ?? _result.StandardOutput;
+
+        foreach (var line in standardOutput.Split('\n', StringSplitOptions.RemoveEmptyEntries))
         {
             OutputReceived?.Invoke(this, new ProcessOutputLineEventArgs(
                 line.TrimEnd('\r'), ProcessOutputSource.StandardOutput));

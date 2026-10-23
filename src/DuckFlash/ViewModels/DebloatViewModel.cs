@@ -126,6 +126,20 @@ public partial class DebloatViewModel : ObservableObject
         }
 
         IsBusy = true;
+
+        try
+        {
+            await RefreshPackagesAsync().ConfigureAwait(true);
+        }
+        finally
+        {
+            IsBusy = false;
+            FlushPendingEntries();
+        }
+    }
+
+    private async Task RefreshPackagesAsync()
+    {
         StatusText = _text.Get("status.debloat.loading");
 
         try
@@ -162,11 +176,6 @@ public partial class DebloatViewModel : ObservableObject
         {
             StatusText = _text.Get("status.debloat.loadFailed", ex.Message);
             AppendLog(StatusText, LogSeverity.Error);
-        }
-        finally
-        {
-            IsBusy = false;
-            FlushPendingEntries();
         }
     }
 
@@ -278,40 +287,48 @@ public partial class DebloatViewModel : ObservableObject
 
         IsBusy = true;
 
-        var failed = 0;
-
-        foreach (var packageName in selected)
+        try
         {
-            var result = await _debloatService.UninstallAsync(packageName).ConfigureAwait(true);
+            var failed = 0;
 
-            if (DebloatService.IsUninstallSuccessful(result))
+            foreach (var packageName in selected)
             {
-                AppendLog(_text.Get("log.debloatRemoved", packageName), LogSeverity.Success);
-            }
-            else
-            {
-                failed++;
+                var result = await _debloatService.UninstallAsync(packageName).ConfigureAwait(true);
 
-                var translated = _errorTranslator.Translate(result, useEnglish: false);
+                if (DebloatService.IsUninstallSuccessful(result))
+                {
+                    AppendLog(_text.Get("log.debloatRemoved", packageName), LogSeverity.Success);
+                }
+                else
+                {
+                    failed++;
 
-                AppendLog(_text.Get("log.debloatFailed", packageName), LogSeverity.Error);
-                AppendLog(translated.Explanation, LogSeverity.Error);
+                    var translated = _errorTranslator.Translate(result, useEnglish: false);
+
+                    AppendLog(_text.Get("log.debloatFailed", packageName), LogSeverity.Error);
+                    AppendLog(translated.Explanation, LogSeverity.Error);
+                }
             }
+
+            var message = failed == 0
+                ? _text.Get("status.debloat.done", (selected.Count - failed).ToString())
+                : _text.Get("status.debloat.doneWithErrors", (selected.Count - failed).ToString(), failed.ToString());
+
+            StatusText = message;
+            AppendLog(message, failed == 0 ? LogSeverity.Success : LogSeverity.Warning);
+
+            // Muat ulang daftar supaya aplikasi yang berhasil dihapus hilang dari daftar.
+            Packages.Clear();
+            VisiblePackages.Clear();
+            UpdateSelectedCount();
+
+            await RefreshPackagesAsync().ConfigureAwait(true);
         }
-
-        var message = failed == 0
-            ? _text.Get("status.debloat.done", (selected.Count - failed).ToString())
-            : _text.Get("status.debloat.doneWithErrors", (selected.Count - failed).ToString(), failed.ToString());
-
-        StatusText = message;
-        AppendLog(message, failed == 0 ? LogSeverity.Success : LogSeverity.Warning);
-
-        // Muat ulang daftar supaya aplikasi yang berhasil dihapus hilang dari daftar.
-        Packages.Clear();
-        VisiblePackages.Clear();
-        UpdateSelectedCount();
-
-        await LoadPackagesAsync().ConfigureAwait(true);
+        finally
+        {
+            IsBusy = false;
+            FlushPendingEntries();
+        }
     }
 
     #endregion

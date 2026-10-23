@@ -34,6 +34,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly LogcatService _logcatService;
     private readonly BackupService _backupService;    private readonly DispatcherTimer _logTimer;
     private readonly Dispatcher _dispatcher;
+    private volatile bool _suppressProcessOutput;
 
     /// <summary>Baris log yang belum sempat ditampilkan, dikumpulkan dari thread proses.</summary>
     private readonly List<LogEntry> _pendingEntries = new();
@@ -381,6 +382,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         IsBusy = true;
         StatusText = Text.Get("status.checkingAdb");
+        _suppressProcessOutput = true;
 
         try
         {
@@ -391,6 +393,7 @@ public partial class MainWindowViewModel : ObservableObject
 
             AppendLog($"[ADB] {result.Message}",
                 result.Status == DeviceCheckStatus.Detected ? LogSeverity.Success : LogSeverity.Warning);
+            AppendAdbDeviceList(result.Devices);
 
             UpdateSerials(result.Devices);
 
@@ -405,6 +408,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         finally
         {
+            _suppressProcessOutput = false;
             IsBusy = false;
             FlushPendingEntries();
         }
@@ -423,6 +427,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         IsBusy = true;
         StatusText = Text.Get("status.checkingFastboot");
+        _suppressProcessOutput = true;
 
         try
         {
@@ -433,6 +438,7 @@ public partial class MainWindowViewModel : ObservableObject
 
             AppendLog($"[Fastboot] {result.Message}",
                 result.Status == DeviceCheckStatus.Detected ? LogSeverity.Success : LogSeverity.Warning);
+            AppendFastbootDeviceList(result.Devices);
 
             UpdateSerials(result.Devices);
 
@@ -447,8 +453,30 @@ public partial class MainWindowViewModel : ObservableObject
         }
         finally
         {
+            _suppressProcessOutput = false;
             IsBusy = false;
             FlushPendingEntries();
+        }
+    }
+
+    private void AppendAdbDeviceList(IReadOnlyList<DeviceInfo> devices)
+    {
+        AppendLog("[ADB] List of devices attached");
+
+        foreach (var device in devices)
+        {
+            var severity = device.Status.Equals("device", StringComparison.OrdinalIgnoreCase)
+                ? LogSeverity.Success
+                : LogSeverity.Warning;
+            AppendLog($"[ADB] {device.Serial}\t{device.Status}", severity);
+        }
+    }
+
+    private void AppendFastbootDeviceList(IReadOnlyList<DeviceInfo> devices)
+    {
+        foreach (var device in devices)
+        {
+            AppendLog($"[Fastboot] {device.Serial}\t{device.Status}", LogSeverity.Success);
         }
     }
 
@@ -815,6 +843,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         IsBusy = true;
         StatusText = Text.Get("status.sideloadRunning");
+        _suppressProcessOutput = true;
 
         try
         {
@@ -841,6 +870,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
         finally
         {
+            _suppressProcessOutput = false;
             IsBusy = false;
             FlushPendingEntries();
         }
@@ -1451,11 +1481,21 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void OnProcessOutputReceived(object? sender, ProcessOutputLineEventArgs e)
     {
+        if (_suppressProcessOutput)
+        {
+            return;
+        }
+
         EnqueueLog(new LogEntry(e.Line));
     }
 
     private void OnCommandStarting(object? sender, ProcessCommandEventArgs e)
     {
+        if (_suppressProcessOutput)
+        {
+            return;
+        }
+
         // Preview command: command lengkap ditulis ke log sebelum dijalankan.
         EnqueueLog(new LogEntry($"> {e.CommandLine}", LogSeverity.Success));
     }

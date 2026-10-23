@@ -136,7 +136,10 @@ public class MainWindowViewModelTests
         {
             ExitCode = 0,
             StandardOutput = "List of devices attached\nABC123\tdevice\n"
-        });
+        })
+        {
+            StandardOutputToEmit = "List of devices attached\nABC123\tdevice\n[DEVICE_PROVISIONED]: [1]\n"
+        };
 
         var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
         await viewModel.CheckAdbCommand.ExecuteAsync(null);
@@ -144,6 +147,10 @@ public class MainWindowViewModelTests
         Assert.Equal(DeviceCheckStatus.Detected, viewModel.AdbStatus);
         Assert.Contains("ABC123", viewModel.DeviceStatus);
         Assert.Contains("ABC123", viewModel.AvailableSerials);
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message == "[ADB] List of devices attached");
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message == "[ADB] ABC123\tdevice");
+        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.Contains("DEVICE_PROVISIONED", StringComparison.Ordinal));
+        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -188,13 +195,19 @@ public class MainWindowViewModelTests
         {
             ExitCode = 0,
             StandardOutput = "ABC123\tfastboot\n"
-        });
+        })
+        {
+            StandardOutputToEmit = "ABC123\tfastboot\n(bootloader) unlocked: yes\n"
+        };
 
         var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
         await viewModel.CheckFastbootCommand.ExecuteAsync(null);
 
         Assert.Equal(DeviceCheckStatus.Detected, viewModel.FastbootStatus);
         Assert.Contains("fastboot", viewModel.DeviceStatus);
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message == "[Fastboot] ABC123\tfastboot");
+        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.Contains("unlocked", StringComparison.Ordinal));
+        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -204,10 +217,43 @@ public class MainWindowViewModelTests
         var runner = new FakeProcessRunner(new CommandResult { ExitCode = 0, StandardOutput = "List of devices attached\n" });
 
         var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
-        await viewModel.CheckAdbCommand.ExecuteAsync(null);
+        await viewModel.RebootCommand.ExecuteAsync("Recovery");
 
         // Preview command harus muncul di log dengan awalan "> ".
         Assert.Contains(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task SideloadCommand_LogsSummaryWithoutRawTransferOutput()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult
+        {
+            ExitCode = 0,
+            StandardOutput = "serving: 'rom.zip'  (100%)\nTotal xfer: 1.00x\n"
+        });
+        var dialog = new FakeDialogService { ConfirmResult = true };
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher, dialog);
+        var zipPath = Path.Combine(Path.GetTempPath(), $"duckflash-test-{Guid.NewGuid():N}.zip");
+
+        using (var archive = System.IO.Compression.ZipFile.Open(zipPath, System.IO.Compression.ZipArchiveMode.Create))
+        {
+            archive.CreateEntry("payload.txt");
+        }
+
+        try
+        {
+            viewModel.SelectPackageFile(zipPath);
+            await viewModel.SideloadCommand.ExecuteAsync(null);
+
+            Assert.Contains(viewModel.LogEntries, entry => entry.Message == "Sideload berhasil.");
+            Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.Contains("Total xfer", StringComparison.Ordinal));
+            Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+        }
+        finally
+        {
+            File.Delete(zipPath);
+        }
     }
 
     [Fact]

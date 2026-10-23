@@ -248,6 +248,48 @@ public class DebloatViewModelTests
     }
 
     [Fact]
+    public async Task UninstallSelected_RefreshesPackagesAndReenablesLoadButton()
+    {
+        var userPackageListCalls = 0;
+        var runner = new ScriptedProcessRunner
+        {
+            Responder = args =>
+            {
+                if (args.Contains("uninstall"))
+                {
+                    return new CommandResult { ExitCode = 0, StandardOutput = "Success\n" };
+                }
+
+                if (args.Contains("-3"))
+                {
+                    userPackageListCalls++;
+                    return new CommandResult
+                    {
+                        ExitCode = 0,
+                        StandardOutput = userPackageListCalls == 1 ? "package:com.a\n" : string.Empty
+                    };
+                }
+
+                return new CommandResult { ExitCode = 0 };
+            }
+        };
+
+        var dialog = new FakeDialogService { DestructiveConfirmResult = true };
+        var viewModel = CreateViewModel(runner, dialog);
+
+        await viewModel.LoadPackagesCommand.ExecuteAsync(null);
+        viewModel.SelectAllCommand.Execute(null);
+        await viewModel.UninstallSelectedCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, userPackageListCalls);
+        Assert.Empty(viewModel.Packages);
+        Assert.Empty(viewModel.VisiblePackages);
+        Assert.Equal(0, viewModel.SelectedCount);
+        Assert.False(viewModel.IsBusy);
+        Assert.True(viewModel.CanInteract);
+    }
+
+    [Fact]
     public async Task UninstallSelected_WithoutSelection_DoesNothing()
     {
         var runner = new ScriptedProcessRunner();
