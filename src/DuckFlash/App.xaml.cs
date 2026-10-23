@@ -1,5 +1,4 @@
 using System.Windows;
-using DuckFlash.ViewModels;
 using DuckFlash.Views;
 
 namespace DuckFlash;
@@ -10,17 +9,8 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        var viewModel = new MainWindowViewModel();
-
-        var window = new MainWindow
-        {
-            DataContext = viewModel
-        };
-
+        var window = new MainWindow();
         MainWindow = window;
         window.Show();
-
-        // Cek apakah platform-tools sudah terpasang begitu aplikasi dibuka.
-        viewModel.InitializeCommand.Execute(null);
     }
 }
