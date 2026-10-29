@@ -300,6 +300,73 @@
 
                     <Separator Margin="0,0,0,16" />
 
+                    <!-- ADB file transfer -->
+                    <TextBlock Text="{Binding Text.FileTransfer}" Style="{StaticResource SectionHeader}" />
+
+                    <TextBlock Text="{Binding Text.PullRemoteSource}" Style="{StaticResource FieldLabel}" />
+                    <DockPanel Margin="0,0,0,8">
+                        <Button Content="{Binding Text.BrowseRemoteFileOrFolder}"
+                                Click="BrowsePullRemoteButton_Click"
+                                IsEnabled="{Binding CanRunCommand}"
+                                Width="132"
+                                Margin="8,0,0,0" />
+                        <TextBox Text="{Binding PullRemotePath, UpdateSourceTrigger=PropertyChanged}"
+                                 IsReadOnly="True"
+                                 AcceptsReturn="True"
+                                 MinHeight="44"
+                                 MaxHeight="88"
+                                 TextWrapping="Wrap"
+                                 VerticalContentAlignment="Center" />
+                    </DockPanel>
+
+                    <TextBlock Text="{Binding Text.PullLocalDestination}" Style="{StaticResource FieldLabel}" />
+                    <DockPanel Margin="0,0,0,8">
+                        <Button Content="{Binding Text.PickLocalFolder}"
+                                Click="PickPullLocalFolderButton_Click"
+                                IsEnabled="{Binding CanRunCommand}"
+                                Width="132"
+                                Margin="8,0,0,0" />
+                        <TextBox Text="{Binding PullLocalFolder}"
+                                 IsReadOnly="True"
+                                 VerticalContentAlignment="Center" />
+                    </DockPanel>
+
+                    <Button Content="{Binding Text.Pull}"
+                            Command="{Binding PullCommand}"
+                            IsEnabled="{Binding CanRunCommand}" />
+
+                    <TextBlock Text="{Binding Text.PushLocalSource}" Style="{StaticResource FieldLabel}" />
+                    <TextBox Text="{Binding PushLocalPath}"
+                             IsReadOnly="True"
+                             AcceptsReturn="True"
+                             MinHeight="44"
+                             MaxHeight="88"
+                             TextWrapping="Wrap"
+                             VerticalContentAlignment="Center"
+                             Margin="0,0,0,8" />
+                    <Button Content="{Binding Text.BrowseLocalSources}"
+                            Click="BrowsePushLocalPathsButton_Click"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,0,0,8" />
+
+                    <TextBlock Text="{Binding Text.PushRemoteDestination}" Style="{StaticResource FieldLabel}" />
+                    <DockPanel Margin="0,0,0,8">
+                        <Button Content="{Binding Text.BrowseRemoteFolder}"
+                                Click="BrowsePushRemoteButton_Click"
+                                IsEnabled="{Binding CanRunCommand}"
+                                Width="132"
+                                Margin="8,0,0,0" />
+                        <TextBox Text="{Binding PushRemoteFolder, UpdateSourceTrigger=PropertyChanged}"
+                                 VerticalContentAlignment="Center" />
+                    </DockPanel>
+
+                    <Button Content="{Binding Text.Push}"
+                            Command="{Binding PushCommand}"
+                            IsEnabled="{Binding CanRunCommand}"
+                            Margin="0,0,0,16" />
+
+                    <Separator Margin="0,0,0,16" />
+
                     <!-- Reboot -->
                     <TextBlock Text="{Binding Text.Reboot}" Style="{StaticResource SectionHeader}" />
 
@@ -400,6 +467,22 @@
                 <StackPanel DockPanel.Dock="Top"
                             Orientation="Horizontal"
                             Margin="0,0,0,8">
+                    <Button Content="{Binding Text.SimplifyLog}"
+                            Command="{Binding SetLogModeCommand}"
+                            CommandParameter="Simplify"
+                            IsEnabled="{Binding IsAdvancedLog}"
+                            Style="{StaticResource CompactButton}" />
+                    <Button Content="{Binding Text.AdvanceLog}"
+                            Command="{Binding SetLogModeCommand}"
+                            CommandParameter="Advance"
+                            IsEnabled="{Binding IsSimplifyLog}"
+                            Style="{StaticResource CompactButton}"
+                            Margin="0" />
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Top"
+                            Orientation="Horizontal"
+                            Margin="0,0,0,8">
                     <Button Content="{Binding Text.CopyLog}"
                             Command="{Binding CopyLogCommand}"
                             Style="{StaticResource CompactButton}" />
@@ -410,15 +493,26 @@
                 </StackPanel>
 
                 <ListBox x:Name="LogListBox"
-                         ItemsSource="{Binding LogEntries}"
+                         ItemsSource="{Binding LogView}"
                          FontFamily="Consolas"
                          FontSize="12"
                          VerticalContentAlignment="Top"
                          ScrollViewer.HorizontalScrollBarVisibility="Auto">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding Formatted}"
-                                       TextWrapping="NoWrap" />
+                            <TextBlock TextWrapping="NoWrap">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="{Binding Formatted}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding DataContext.IsAdvancedLog, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                                         Value="False">
+                                                <Setter Property="Text" Value="{Binding Message}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>

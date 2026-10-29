@@ -22,6 +22,73 @@ public class MainWindowViewModelTests
     }
 
     [Fact]
+    public async Task PullCommand_PassesMultipleSelectedRemotePaths()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult { ExitCode = 0 });
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
+        var localFolder = Path.Combine(Path.GetTempPath(), $"duckflash-pull-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(localFolder);
+
+        try
+        {
+            viewModel.SelectedSerial = "SERIAL123";
+            viewModel.SetPullRemotePaths(new[] { "/sdcard/DCIM", "/sdcard/Pictures" });
+            viewModel.PullLocalFolder = localFolder;
+
+            await viewModel.PullCommand.ExecuteAsync(null);
+
+            Assert.Equal(
+                new[]
+                {
+                    "-s", "SERIAL123", "pull",
+                    "/sdcard/DCIM", "/sdcard/Pictures",
+                    Path.GetFullPath(localFolder)
+                },
+                runner.LastArguments);
+        }
+        finally
+        {
+            Directory.Delete(localFolder);
+        }
+    }
+
+    [Fact]
+    public async Task PushCommand_PassesMultipleSelectedLocalPaths()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult { ExitCode = 0 });
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
+        var sourceFolder = Path.Combine(Path.GetTempPath(), $"duckflash-push-{Guid.NewGuid():N}");
+        var sourceFile = $"{sourceFolder}.txt";
+        Directory.CreateDirectory(sourceFolder);
+        File.WriteAllText(sourceFile, "test");
+
+        try
+        {
+            viewModel.SelectedSerial = "SERIAL123";
+            viewModel.SetPushLocalPaths(new[] { sourceFolder, sourceFile });
+            viewModel.PushRemoteFolder = "/sdcard/Download";
+
+            await viewModel.PushCommand.ExecuteAsync(null);
+
+            Assert.Equal(
+                new[]
+                {
+                    "-s", "SERIAL123", "push",
+                    Path.GetFullPath(sourceFolder), Path.GetFullPath(sourceFile),
+                    "/sdcard/Download"
+                },
+                runner.LastArguments);
+        }
+        finally
+        {
+            Directory.Delete(sourceFolder);
+            File.Delete(sourceFile);
+        }
+    }
+
+    [Fact]
     public async Task InitializeCommand_ReportsPlatformToolsMissing()
     {
         var dispatcher = CreateDispatcher();
@@ -149,8 +216,17 @@ public class MainWindowViewModelTests
         Assert.Contains("ABC123", viewModel.AvailableSerials);
         Assert.Contains(viewModel.LogEntries, entry => entry.Message == "[ADB] List of devices attached");
         Assert.Contains(viewModel.LogEntries, entry => entry.Message == "[ADB] ABC123\tdevice");
-        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.Contains("DEVICE_PROVISIONED", StringComparison.Ordinal));
-        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message.Contains("DEVICE_PROVISIONED", StringComparison.Ordinal));
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+        Assert.Contains(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => entry.Message.Contains("Model:", StringComparison.Ordinal));
+        Assert.Single(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => entry.Message.Contains("Model:", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => entry.Message.Contains("DEVICE_PROVISIONED", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -206,8 +282,8 @@ public class MainWindowViewModelTests
         Assert.Equal(DeviceCheckStatus.Detected, viewModel.FastbootStatus);
         Assert.Contains("fastboot", viewModel.DeviceStatus);
         Assert.Contains(viewModel.LogEntries, entry => entry.Message == "[Fastboot] ABC123\tfastboot");
-        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.Contains("unlocked", StringComparison.Ordinal));
-        Assert.DoesNotContain(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message.Contains("unlocked", StringComparison.Ordinal));
+        Assert.Contains(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -221,6 +297,39 @@ public class MainWindowViewModelTests
 
         // Preview command harus muncul di log dengan awalan "> ".
         Assert.Contains(viewModel.LogEntries, entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task LogMode_SimplifyHidesAdvancedDetails_AndAdvanceShowsTimestamps()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult
+        {
+            ExitCode = 0,
+            StandardOutput = "device detail output"
+        });
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
+
+        await viewModel.RebootCommand.ExecuteAsync("Recovery");
+
+        Assert.False(viewModel.IsAdvancedLog);
+        Assert.Contains(viewModel.LogView.Cast<LogEntry>(), entry => entry.Message == "Reboot Recovery berhasil.");
+        Assert.DoesNotContain(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => entry.Message.StartsWith("> ", StringComparison.Ordinal));
+
+        viewModel.SetLogModeCommand.Execute("Advance");
+
+        Assert.True(viewModel.IsAdvancedLog);
+        Assert.Contains(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => entry.Formatted.Contains("> ", StringComparison.Ordinal));
+        Assert.Contains(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => entry.Message.Contains("device detail output", StringComparison.Ordinal));
+        Assert.All(
+            viewModel.LogView.Cast<LogEntry>(),
+            entry => Assert.Contains(entry.Timestamp.ToString("HH:mm:ss"), entry.Formatted));
     }
 
     [Fact]
@@ -710,6 +819,79 @@ public class MainWindowViewModelTests
         await viewModel.RebootCommand.ExecuteAsync("Recovery");
 
         Assert.Equal(new[] { "-s", "SERIAL123", "reboot", "recovery" }, runner.LastArguments);
+    }
+
+    [Fact]
+    public async Task RebootCommand_AfterFastbootCheck_UsesFastboot()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult
+        {
+            ExitCode = 0,
+            StandardOutput = "SERIAL123\tfastboot\n"
+        });
+
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
+
+        await viewModel.CheckFastbootCommand.ExecuteAsync(null);
+        await viewModel.RebootCommand.ExecuteAsync("Recovery");
+
+        Assert.EndsWith("fastboot.exe", runner.LastFileName, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(new[] { "-s", "SERIAL123", "reboot", "recovery" }, runner.LastArguments);
+    }
+
+    [Fact]
+    public async Task PullCommand_UsesSelectedDeviceAndPaths()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult { ExitCode = 0 });
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
+        var localFolder = Path.Combine(Path.GetTempPath(), $"duckflash-pull-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(localFolder);
+
+        try
+        {
+            viewModel.SelectedSerial = "SERIAL123";
+            viewModel.SetPullRemotePaths(new[] { "/sdcard/DCIM" });
+            viewModel.PullLocalFolder = localFolder;
+
+            await viewModel.PullCommand.ExecuteAsync(null);
+
+            Assert.Equal(
+                new[] { "-s", "SERIAL123", "pull", "/sdcard/DCIM", Path.GetFullPath(localFolder) },
+                runner.LastArguments);
+        }
+        finally
+        {
+            Directory.Delete(localFolder);
+        }
+    }
+
+    [Fact]
+    public async Task PushCommand_UsesSelectedDeviceAndPaths()
+    {
+        var dispatcher = CreateDispatcher();
+        var runner = new FakeProcessRunner(new CommandResult { ExitCode = 0 });
+        var viewModel = CreateViewModel(new FakeToolsDownloader(), runner, dispatcher);
+        var localFile = Path.Combine(Path.GetTempPath(), $"duckflash-push-{Guid.NewGuid():N}.txt");
+        File.WriteAllText(localFile, "test");
+
+        try
+        {
+            viewModel.SelectedSerial = "SERIAL123";
+            viewModel.SetPushLocalPaths(new[] { localFile });
+            viewModel.PushRemoteFolder = "/sdcard/Download";
+
+            await viewModel.PushCommand.ExecuteAsync(null);
+
+            Assert.Equal(
+                new[] { "-s", "SERIAL123", "push", Path.GetFullPath(localFile), "/sdcard/Download" },
+                runner.LastArguments);
+        }
+        finally
+        {
+            File.Delete(localFile);
+        }
     }
 
     [Fact]

@@ -17,14 +17,30 @@ public sealed class RebootService
     }
 
     /// <summary>
-    /// Reboot perangkat. Untuk Fastbootd, perintah dikirim lewat fastboot
-    /// karena perangkat sedang dalam mode fastboot.
+    /// Reboot perangkat melalui tool yang sesuai dengan mode koneksinya.
     /// </summary>
     public async Task<CommandResult> RebootAsync(
         RebootTarget target,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        bool isFastboot = false)
     {
         var argument = target.ToArgument();
+
+        if (isFastboot)
+        {
+            var arguments = target switch
+            {
+                RebootTarget.System => new[] { "reboot" },
+                RebootTarget.Recovery => new[] { "reboot", argument },
+                RebootTarget.Bootloader => new[] { "reboot", argument },
+                RebootTarget.Fastbootd => new[] { "reboot", "fastboot" },
+                _ => throw new ArgumentOutOfRangeException(nameof(target), target, "Target reboot tidak dikenal.")
+            };
+
+            return await _fastbootService
+                .ExecuteAsync(arguments, cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         if (target == RebootTarget.Fastbootd)
         {

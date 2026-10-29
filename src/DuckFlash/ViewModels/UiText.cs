@@ -30,6 +30,7 @@ public sealed class UiText : INotifyPropertyChanged, ITextProvider
     public string FlashImage => Get("section.flash");
     public string SideloadPackage => Get("section.sideload");
     public string InstallPackage => Get("section.install");
+    public string FileTransfer => Get("section.fileTransfer");
     public string Reboot => Get("section.reboot");
     public string Update => Get("section.update");
     public string Settings => Get("section.settings");
@@ -55,6 +56,12 @@ public sealed class UiText : INotifyPropertyChanged, ITextProvider
     public string Flash => Get("button.flash");
     public string Sideload => Get("button.sideload");
     public string InstallApk => Get("button.installApk");
+    public string Pull => Get("button.pull");
+    public string Push => Get("button.push");
+    public string BrowseRemoteFileOrFolder => Get("button.browseRemoteFileOrFolder");
+    public string BrowseRemoteFolder => Get("button.browseRemoteFolder");
+    public string PickLocalFolder => Get("button.pickLocalFolder");
+    public string BrowseLocalSources => Get("button.browseLocalSources");
     public string CompareHash => Get("button.compareHash");
     public string RebootSystem => Get("button.rebootSystem");
     public string RebootRecovery => Get("button.rebootRecovery");
@@ -63,6 +70,8 @@ public sealed class UiText : INotifyPropertyChanged, ITextProvider
     public string CheckUpdate => Get("button.checkUpdate");
     public string CopyLog => Get("button.copyLog");
     public string ClearLog => Get("button.clearLog");
+    public string SimplifyLog => Get("button.simplifyLog");
+    public string AdvanceLog => Get("button.advanceLog");
     public string StartRomWizard => Get("button.startRomWizard");
     public string NextStep => Get("button.nextStep");
     public string BackStep => Get("button.backStep");
@@ -100,6 +109,10 @@ public sealed class UiText : INotifyPropertyChanged, ITextProvider
     public string ScreenshotTarget => Get("label.screenshotTarget");
     public string LogcatTarget => Get("label.logcatTarget");
     public string BackupFolder => Get("label.backupFolder");
+    public string PullRemoteSource => Get("label.pullRemoteSource");
+    public string PullLocalDestination => Get("label.pullLocalDestination");
+    public string PushLocalSource => Get("label.pushLocalSource");
+    public string PushRemoteDestination => Get("label.pushRemoteDestination");
 
     #endregion
 

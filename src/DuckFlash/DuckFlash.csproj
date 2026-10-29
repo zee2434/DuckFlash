@@ -17,9 +17,9 @@
       lalu dibandingkan dengan tag_name rilis terbaru di GitHub Releases.
       Jadi setiap rilis baru HARUS menaikkan nomor di sini.
     -->
-    <Version>1.1.0</Version>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
+    <Version>1.2.0</Version>
+    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

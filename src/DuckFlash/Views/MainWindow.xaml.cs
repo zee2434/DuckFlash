@@ -2,13 +2,15 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.Win32;
 using DuckFlash.ViewModels;
 
 namespace DuckFlash.Views;
 
 /// <summary>
 /// Code-behind utama, TIDAK punya logika yang diminta pengguna.
-/// Hanya menangani event UI: file picker dan drag &amp; drop file.
+/// Hanya menangani event UI: file/folder picker, browser path perangkat,
+/// dan drag &amp; drop file.
 /// </summary>
 public partial class MainWindow : Window
 {
@@ -66,6 +68,59 @@ public partial class MainWindow : Window
         if (dlg.ShowDialog(this) == true)
         {
             _viewModel.HandleDroppedFile(dlg.FileName);
+        }
+    }
+
+    private void BrowsePullRemoteButton_Click(object sender, RoutedEventArgs e)
+    {
+        BrowseRemotePath(foldersOnly: false, _viewModel.SetPullRemotePaths);
+    }
+
+    private void BrowsePushRemoteButton_Click(object sender, RoutedEventArgs e)
+    {
+        BrowseRemotePath(foldersOnly: true, paths =>
+            _viewModel.SetPushRemoteFolder(paths[0]));
+    }
+
+    private void PickPullLocalFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = _viewModel.Text.Get("dialog.fileTransfer.pickPullFolder")
+        };
+
+        if (dialog.ShowDialog(this) == true)
+        {
+            _viewModel.SetPullLocalFolder(dialog.FolderName);
+        }
+    }
+
+    private void BrowsePushLocalPathsButton_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new LocalPathPickerWindow(_viewModel.Text)
+        {
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            _viewModel.SetPushLocalPaths(dialog.SelectedPaths);
+        }
+    }
+
+    private void BrowseRemotePath(bool foldersOnly, Action<IReadOnlyList<string>> selectPaths)
+    {
+        var dialog = new RemotePathPickerWindow(
+            _viewModel.ListRemoteDirectoryAsync,
+            _viewModel.Text,
+            foldersOnly)
+        {
+            Owner = this
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            selectPaths(dialog.SelectedPaths);
         }
     }
 

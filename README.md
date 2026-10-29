@@ -7,6 +7,10 @@ Tool desktop Windows untuk membantu pemula mengoprek Android (custom ROM, custom
 
 Dibuat dengan C# dan WPF (.NET 8), lisensi MIT, proyek open source.
 
+<<<<<<< HEAD
+=======
+Versi saat ini: **v1.2.0**
+>>>>>>> 0ca3a41 (initial commit)
 
 ## Tampilan
 
@@ -125,9 +129,31 @@ Kalau terdeteksi lebih dari satu perangkat, pilih serial di dropdown
 Tarik file `.apk` ke kotak **Tarik file .apk ke sini**, lalu klik **Install APK**.
 Berguna buat tes APK hasil build sendiri sebelum rilis.
 
+### ADB Pull / Push
+
+Bagian **Transfer File ADB** dapat menyalin file maupun folder antara perangkat
+dan komputer. Untuk **Pull**, jelajahi file/folder di perangkat lalu pilih folder
+tujuan di komputer. Untuk **Push**, pilih file/folder lokal dan jelajahi folder
+tujuan di perangkat. Pastikan perangkat terdeteksi di **Check ADB** dan izinkan
+USB debugging saat diminta. Browser perangkat dimulai dari `/sdcard`; path juga
+dapat dimasukkan langsung. Pilih beberapa sumber sekaligus menggunakan **Ctrl**
+atau **Shift**; Pull menerima beberapa file/folder perangkat, dan Push menerima
+gabungan beberapa file/folder lokal dalam satu transfer.
+
+### Mode Log
+
+Panel log memiliki dua tampilan. **Simplify** menampilkan ringkasan tanpa
+timestamp serta menyaring output mentah agar mudah dibaca. **Advance** menampilkan
+preview command, output proses lengkap, dan timestamp untuk troubleshooting.
+Pemeriksaan ADB/Fastboot pada Simplify menampilkan status perangkat beserta
+detail yang tersedia, seperti model, codename, dan versi Android.
+
 ### 7. Reboot
 
 Tombol **Reboot System / Recovery / Bootloader / Fastbootd** untuk berpindah mode.
+Perintah mengikuti mode perangkat yang terakhir terdeteksi: klik **Check ADB** saat
+perangkat berada di Android, atau **Check Fastboot** saat perangkat berada di
+bootloader/fastboot, sebelum memilih tujuan reboot.
 
 ## Fitur Lanjutan
 

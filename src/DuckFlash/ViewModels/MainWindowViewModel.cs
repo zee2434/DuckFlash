@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows;
+using System.Windows.Data;
 using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -32,7 +34,9 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly DebloatService _debloatService;
     private readonly ScreenshotService _screenshotService;
     private readonly LogcatService _logcatService;
-    private readonly BackupService _backupService;    private readonly DispatcherTimer _logTimer;
+    private readonly BackupService _backupService;
+    private readonly DispatcherTimer _logTimer;
+    private readonly AdbFileTransferService _fileTransferService;
     private readonly Dispatcher _dispatcher;
     private volatile bool _suppressProcessOutput;
 
@@ -41,6 +45,10 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>Pengaman thread untuk daftar antrean log.</summary>
     private readonly object _pendingLock = new();
+
+    private bool _isFastbootMode;
+    private IReadOnlyList<string> _pullRemotePaths = Array.Empty<string>();
+    private IReadOnlyList<string> _pushLocalPaths = Array.Empty<string>();
 
     /// <summary>Persentase terakhir yang dilaporkan service, menunggu flushed ke UI.</summary>
     private int _pendingProgress;
@@ -126,6 +134,18 @@ public partial class MainWindowViewModel : ObservableObject
     private string _apkSize = string.Empty;
 
     [ObservableProperty]
+    private string _pullRemotePath = string.Empty;
+
+    [ObservableProperty]
+    private string _pullLocalFolder = string.Empty;
+
+    [ObservableProperty]
+    private string _pushLocalPath = string.Empty;
+
+    [ObservableProperty]
+    private string _pushRemoteFolder = string.Empty;
+
+    [ObservableProperty]
     private string _partition = "recovery";
 
     [ObservableProperty]
@@ -136,6 +156,10 @@ public partial class MainWindowViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isDragOver;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSimplifyLog))]
+    private bool _isAdvancedLog;
 
     [ObservableProperty]
     private string _updateStatus = string.Empty;
@@ -169,6 +193,11 @@ public partial class MainWindowViewModel : ObservableObject
 
     /// <summary>Semua baris log, dari yang paling lama ke yang terbaru.</summary>
     public ObservableCollection<LogEntry> LogEntries { get; } = new();
+
+    /// <summary>Log dengan baris detail disaring sesuai mode tampilan.</summary>
+    public ICollectionView LogView { get; }
+
+    public bool IsSimplifyLog => !IsAdvancedLog;
 
     /// <summary>Partisi yang boleh dipilih untuk flash.</summary>
     public IReadOnlyList<string> AvailablePartitions => FlashPartition.Allowed;
@@ -206,6 +235,10 @@ public partial class MainWindowViewModel : ObservableObject
         LocalizationService? localization = null,
         AppSettings? settings = null)
     {
+        LogView = CollectionViewSource.GetDefaultView(LogEntries);
+        LogView.Filter = item => item is LogEntry entry
+            && (IsAdvancedLog || !entry.IsAdvancedOnly);
+
         _processRunner = processRunner;
         _dispatcher = dispatcher;
         _errorTranslator = errorTranslator ?? new ErrorTranslator();
@@ -239,6 +272,7 @@ public partial class MainWindowViewModel : ObservableObject
         _screenshotService = new ScreenshotService(_adbService, _localization);
         _logcatService = new LogcatService(_adbService, _localization);
         _backupService = new BackupService(_adbService, _localization);
+        _fileTransferService = new AdbFileTransferService(_adbService);
         _updateService = updateService ?? new UpdateService(null, null, _localization);
 
         AvailableLanguages = new List<LanguageOption>
@@ -382,7 +416,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         IsBusy = true;
         StatusText = Text.Get("status.checkingAdb");
-        _suppressProcessOutput = true;
+        _isFastbootMode = false;
 
         try
         {
@@ -408,7 +442,6 @@ public partial class MainWindowViewModel : ObservableObject
         }
         finally
         {
-            _suppressProcessOutput = false;
             IsBusy = false;
             FlushPendingEntries();
         }
@@ -427,12 +460,13 @@ public partial class MainWindowViewModel : ObservableObject
 
         IsBusy = true;
         StatusText = Text.Get("status.checkingFastboot");
-        _suppressProcessOutput = true;
+        _isFastbootMode = false;
 
         try
         {
             var result = await _deviceCheckService.CheckFastbootAsync();
 
+            _isFastbootMode = result.Status == DeviceCheckStatus.Detected;
             FastbootStatus = result.Status;
             DeviceStatus = Text.Get("device.fastbootPrefix", result.Message);
 
@@ -453,7 +487,6 @@ public partial class MainWindowViewModel : ObservableObject
         }
         finally
         {
-            _suppressProcessOutput = false;
             IsBusy = false;
             FlushPendingEntries();
         }
@@ -461,14 +494,14 @@ public partial class MainWindowViewModel : ObservableObject
 
     private void AppendAdbDeviceList(IReadOnlyList<DeviceInfo> devices)
     {
-        AppendLog("[ADB] List of devices attached");
+        AppendLog("[ADB] List of devices attached", isAdvancedOnly: true);
 
         foreach (var device in devices)
         {
             var severity = device.Status.Equals("device", StringComparison.OrdinalIgnoreCase)
                 ? LogSeverity.Success
                 : LogSeverity.Warning;
-            AppendLog($"[ADB] {device.Serial}\t{device.Status}", severity);
+            AppendLog($"[ADB] {device.Serial}\t{device.Status}", severity, isAdvancedOnly: true);
         }
     }
 
@@ -476,7 +509,10 @@ public partial class MainWindowViewModel : ObservableObject
     {
         foreach (var device in devices)
         {
-            AppendLog($"[Fastboot] {device.Serial}\t{device.Status}", LogSeverity.Success);
+            AppendLog(
+                $"[Fastboot] {device.Serial}\t{device.Status}",
+                LogSeverity.Success,
+                isAdvancedOnly: true);
         }
     }
 
@@ -498,7 +534,7 @@ public partial class MainWindowViewModel : ObservableObject
                 details.Model,
                 details.Codename,
                 details.AndroidVersion);
-            AppendLog($"[ADB] {DeviceDetails}");
+            AppendLog($"[ADB] {serial} | {DeviceDetails}");
         }
         catch (Exception ex)
         {
@@ -526,7 +562,8 @@ public partial class MainWindowViewModel : ObservableObject
                 details.Codename,
                 details.BootloaderState,
                 details.ActiveSlot);
-            AppendLog($"[Fastboot] {DeviceDetails}");
+            AppendLog($"[Fastboot] {serial} | {DeviceDetails}");
+            AppendLog($"[Fastboot] {serial} | {DeviceDetails}");
         }
         catch (Exception ex)
         {
@@ -959,6 +996,129 @@ public partial class MainWindowViewModel : ObservableObject
 
     #endregion
 
+    #region ADB file transfer
+
+    public Task<IReadOnlyList<RemoteFileEntry>> ListRemoteDirectoryAsync(
+        string path,
+        CancellationToken cancellationToken = default)
+    {
+        return _fileTransferService.ListDirectoryAsync(path, cancellationToken);
+    }
+
+    public void SetPullRemotePaths(IEnumerable<string> paths)
+    {
+        _pullRemotePaths = paths.Distinct(StringComparer.Ordinal).ToArray();
+        PullRemotePath = string.Join(Environment.NewLine, _pullRemotePaths);
+    }
+
+    public void SetPullLocalFolder(string path)
+    {
+        PullLocalFolder = path;
+    }
+
+    public void SetPushLocalPaths(IEnumerable<string> paths)
+    {
+        _pushLocalPaths = paths
+            .Select(Path.GetFullPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        PushLocalPath = string.Join(Environment.NewLine, _pushLocalPaths);
+    }
+
+    public void SetPushRemoteFolder(string path)
+    {
+        PushRemoteFolder = path;
+    }
+
+    [RelayCommand]
+    private async Task PullAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!IsDeviceUnambiguous)
+        {
+            ShowDeviceNotSelectedError();
+            return;
+        }
+
+        if (_pullRemotePaths.Count == 0 || !Directory.Exists(PullLocalFolder))
+        {
+            AppendLog(Text.Get("validate.fileTransferPullRequired"), LogSeverity.Error);
+            StatusText = Text.Get("validate.fileTransferPullRequired");
+            return;
+        }
+
+        await RunFileTransferAsync(
+            "Pull",
+            () => _fileTransferService.PullAsync(_pullRemotePaths, PullLocalFolder));
+    }
+
+    [RelayCommand]
+    private async Task PushAsync()
+    {
+        if (IsBusy)
+        {
+            return;
+        }
+
+        if (!IsDeviceUnambiguous)
+        {
+            ShowDeviceNotSelectedError();
+            return;
+        }
+
+        if (_pushLocalPaths.Count == 0 || string.IsNullOrWhiteSpace(PushRemoteFolder))
+        {
+            AppendLog(Text.Get("validate.fileTransferPushRequired"), LogSeverity.Error);
+            StatusText = Text.Get("validate.fileTransferPushRequired");
+            return;
+        }
+
+        await RunFileTransferAsync(
+            "Push",
+            () => _fileTransferService.PushAsync(_pushLocalPaths, PushRemoteFolder));
+    }
+
+    private async Task RunFileTransferAsync(string operation, Func<Task<CommandResult>> execute)
+    {
+        IsBusy = true;
+        StatusText = Text.Get("status.fileTransfer.running", operation);
+
+        try
+        {
+            var result = await execute();
+
+            if (result.IsSuccess)
+            {
+                AppendLog(Text.Get("status.fileTransfer.success", operation), LogSeverity.Success);
+                StatusText = Text.Get("status.fileTransfer.success", operation);
+            }
+            else
+            {
+                HandleCommandFailure(operation, result);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            AppendLog(Text.Get("status.fileTransfer.cancelled", operation), LogSeverity.Warning);
+        }
+        catch (Exception ex)
+        {
+            AppendLog(Text.Get("status.fileTransfer.failed", operation, ex.Message), LogSeverity.Error);
+            StatusText = Text.Get("status.fileTransfer.failed", operation, ex.Message);
+        }
+        finally
+        {
+            IsBusy = false;
+            FlushPendingEntries();
+        }
+    }
+
+    #endregion
+
     #region Reboot
 
     /// <summary>
@@ -996,7 +1156,9 @@ public partial class MainWindowViewModel : ObservableObject
 
         try
         {
-            var result = await _rebootService.RebootAsync(rebootTarget);
+            var result = await _rebootService.RebootAsync(
+                rebootTarget,
+                isFastboot: _isFastbootMode);
 
             if (result.IsSuccess)
             {
@@ -1240,6 +1402,19 @@ public partial class MainWindowViewModel : ObservableObject
 
     #region Log
 
+    [RelayCommand]
+    private void SetLogMode(string mode)
+    {
+        if (mode.Equals("Advance", StringComparison.OrdinalIgnoreCase))
+        {
+            IsAdvancedLog = true;
+        }
+        else if (mode.Equals("Simplify", StringComparison.OrdinalIgnoreCase))
+        {
+            IsAdvancedLog = false;
+        }
+    }
+
     /// <summary>Salin seluruh isi log ke clipboard.</summary>
     [RelayCommand]
     private void CopyLog()
@@ -1443,6 +1618,13 @@ public partial class MainWindowViewModel : ObservableObject
         ShowError(Text.Get("dialog.title.commandFailed", operation), translated.Formatted);
     }
 
+    private void ShowDeviceNotSelectedError()
+    {
+        var message = Text.Get("dialog.deviceNotSelected");
+        AppendLog(message, LogSeverity.Error);
+        ShowError(Text.Get("dialog.title.deviceNotSelected"), message);
+    }
+
     /// <summary>
     /// Tampilkan dialog error ke pengguna.
     /// </summary>
@@ -1486,7 +1668,7 @@ public partial class MainWindowViewModel : ObservableObject
             return;
         }
 
-        EnqueueLog(new LogEntry(e.Line));
+        EnqueueLog(new LogEntry(e.Line, isAdvancedOnly: true));
     }
 
     private void OnCommandStarting(object? sender, ProcessCommandEventArgs e)
@@ -1497,7 +1679,7 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         // Preview command: command lengkap ditulis ke log sebelum dijalankan.
-        EnqueueLog(new LogEntry($"> {e.CommandLine}", LogSeverity.Success));
+        EnqueueLog(new LogEntry($"> {e.CommandLine}", LogSeverity.Success, isAdvancedOnly: true));
     }
 
     private void OnLogTimerTick(object? sender, EventArgs e)
@@ -1554,9 +1736,17 @@ public partial class MainWindowViewModel : ObservableObject
         }
     }
 
-    private void AppendLog(string message, LogSeverity severity = LogSeverity.Info)
+    private void AppendLog(
+        string message,
+        LogSeverity severity = LogSeverity.Info,
+        bool isAdvancedOnly = false)
     {
-        EnqueueLog(new LogEntry(message, severity));
+        EnqueueLog(new LogEntry(message, severity, isAdvancedOnly));
+    }
+
+    partial void OnIsAdvancedLogChanged(bool value)
+    {
+        LogView.Refresh();
     }
 
     #endregion
