@@ -7,7 +7,6 @@ Tool desktop Windows untuk membantu pemula mengoprek Android (custom ROM, custom
 
 Dibuat dengan C# dan WPF (.NET 8), lisensi MIT, proyek open source.
 
-<<<<<<< HEAD
 =======
 Versi saat ini: **v1.2.0**
 >>>>>>> 0ca3a41 (initial commit)
